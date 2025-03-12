@@ -28,15 +28,9 @@ The system will follow a microservice architecture pattern, with the following c
 
 ### High-Level Architecture
 
-```
-[Frontend (React/JS)] <---> [API Gateway] <---> [Authentication Service]
-                               |
-                               ↓
-[Patient Profile Service] <---> [Core Application Service] <---> [Model Microservices (x2)]
-        |                               |                             |
-        ↓                               ↓                             ↓
-[Patient Database]            [Application Database]            [Model Assets]
-```
+<div align="center">
+  <img src="./images/healthcare-ai-system.png" alt="System Architecture" width="800">
+</div>
 
 ### Key Components
 
