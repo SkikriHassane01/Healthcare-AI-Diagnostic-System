@@ -123,3 +123,18 @@ def admin_required(f):
             return jsonify({'message': 'Admin privileges required'}), 403
         return f(current_user, *args, **kwargs)
     return decorated
+
+
+# if __name__ == "__main__":
+#     from app import app
+#     with app.app_context():
+#         test_user_id = '1'
+#         token = generate_token(test_user_id)
+#         print(f"Generated token: {token}")
+        
+#         # decode the token to verify it
+#         decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+#         print(f"Decoded token: {decoded}")
+        
+#         # Verify the user ID is in the token
+#         print(f"User ID in token (should be {test_user_id}): {decoded['sub']}")
