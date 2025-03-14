@@ -9,7 +9,7 @@ from utils.db import db
 from utils.logger import setup_logger
 logger = setup_logger('User Model')
 
-from patient import Patient
+from models.patient import Patient
 
 class UserRole:
     DOCTOR = 'doctor'
