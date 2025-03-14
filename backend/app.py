@@ -1,7 +1,22 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from pathlib import Path
+import sys
+
+sys.path.append(str(Path(__file__).resolve().parents[0]))
+
+from utils.logger import setup_logger
+logger = setup_logger('Main Application')
+
+from utils.db import init_db
+from config import Config
+
+config = Config()
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.SQLALCHEMY_TRACK_MODIFICATIONS
+db = init_db(app)
 
 CORS(app)
 
