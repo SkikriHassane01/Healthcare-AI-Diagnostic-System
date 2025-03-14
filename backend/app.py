@@ -16,6 +16,7 @@ config = Config()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.SQLALCHEMY_TRACK_MODIFICATIONS
+app.config['SECRET_KEY'] = config.SECRET_KEY
 db = init_db(app)
 
 CORS(app)
