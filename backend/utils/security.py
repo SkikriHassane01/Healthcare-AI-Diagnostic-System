@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parents[1]))
 from models.user import User
-from logger import setup_logger
+from utils.logger import setup_logger
 
 logger = setup_logger("security_utils")
 
