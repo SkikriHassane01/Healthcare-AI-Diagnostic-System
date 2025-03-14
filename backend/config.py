@@ -8,7 +8,7 @@ class Config:
     DEBUG = True
     
     # Database
-    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}/{}'.format(
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
         os.environ.get("DB_USERNAME", 'postgres'),
         os.environ.get("DB_PASSWORD", 'postgres'),
         os.environ.get("DB_HOST", 'db'),
@@ -17,5 +17,3 @@ class Config:
     )
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False # Turn off update messages from sqlalchemy
-
-    
