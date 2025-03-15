@@ -1,6 +1,8 @@
 // frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import { ThemeProvider } from './context/ThemeContext'
+
 // Import authentication components
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -10,8 +12,6 @@ import Dashboard from './components/dashboard/Dashboard';
 // Import pages
 import LandingPage from './pages/LandingPage';
 
-// Import auth service
-import authService from './services/auth.service';
 
 // Placeholder pages (will be replaced in later phases)
 const ProfilePage = () => <div className="p-8">User Profile (Coming Soon)</div>;
@@ -36,9 +36,11 @@ const NotFound = () => (
 
 function App() {
   return (
+    <ThemeProvider>
     <Router>
       <Routes>
         {/* Public routes */}
+        
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -61,6 +63,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 
