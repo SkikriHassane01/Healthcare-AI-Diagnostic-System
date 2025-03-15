@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -12,9 +11,9 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       }
-    },
-    css: {
-      postcss: './postcss.config.js'
     }
+  },
+  css: {
+    postcss: './postcss.config.js'
   }
 })
