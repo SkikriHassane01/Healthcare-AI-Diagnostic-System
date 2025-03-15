@@ -9,7 +9,7 @@ export const ThemeProvider = ({ children }) => {
     if (savedTheme) {
       return savedTheme === 'dark';
     }
-    // Otherwise use system preference or default to dark
+    // Otherwise use system preference or default to light
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 

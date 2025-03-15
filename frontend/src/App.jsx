@@ -14,20 +14,20 @@ import LandingPage from './pages/LandingPage';
 
 
 // Placeholder pages (will be replaced in later phases)
-const ProfilePage = () => <div className="p-8">User Profile (Coming Soon)</div>;
-const PatientsPage = () => <div className="p-8">Patients Management (Coming Soon)</div>;
-const DiabetesPage = () => <div className="p-8">Diabetes Screening Tool (Coming Soon)</div>;
-const BrainTumorPage = () => <div className="p-8">Brain Tumor Detection Tool (Coming Soon)</div>;
-const AdminPage = () => <div className="p-8">Admin Dashboard (Coming Soon)</div>;
+const ProfilePage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">User Profile (Coming Soon)</div>;
+const PatientsPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Patients Management (Coming Soon)</div>;
+const DiabetesPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Diabetes Screening Tool (Coming Soon)</div>;
+const BrainTumorPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Brain Tumor Detection Tool (Coming Soon)</div>;
+const AdminPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Admin Dashboard (Coming Soon)</div>;
 
 // 404 Page
 const NotFound = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center">
-    <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
-    <p className="text-gray-600 mb-6">Page not found</p>
+  <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300">
+    <h1 className="text-4xl font-bold mb-2">404</h1>
+    <p className="text-slate-600 dark:text-slate-300 mb-6">Page not found</p>
     <a 
       href="/" 
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-md shadow-md transition-colors"
     >
       Go Home
     </a>
@@ -40,7 +40,6 @@ function App() {
     <Router>
       <Routes>
         {/* Public routes */}
-        
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
