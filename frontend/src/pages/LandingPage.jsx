@@ -3,13 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import authService from '../services/auth.service';
 import { useTheme } from '../context/ThemeContext';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Play } from 'lucide-react';
 
 const LandingPage = () => {
   const isLoggedIn = authService.isLoggedIn();
   const [activeTab, setActiveTab] = useState('diabetes');
   const { isDark, setIsDark } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   
   // Handle scroll for navbar appearance
   useEffect(() => {
@@ -23,6 +25,27 @@ const LandingPage = () => {
   // Simple toggle for theme
   const toggleTheme = () => {
     setIsDark(!isDark);
+  };
+
+  // Enhanced function to handle tab switching with smooth transition
+  const handleTabChange = (tab) => {
+    // First fade out current content
+    document.getElementById('tab-content').classList.add('opacity-0');
+    
+    // After a short delay, change tab and fade in
+    setTimeout(() => {
+      setActiveTab(tab);
+      document.getElementById('tab-content').classList.remove('opacity-0');
+    }, 150);
+  };
+
+  // Handle video play
+  const playVideo = () => {
+    const video = document.getElementById('demo-video');
+    if (video) {
+      video.play();
+      setIsVideoPlaying(true);
+    }
   };
   
   return (
@@ -109,7 +132,7 @@ const LandingPage = () => {
                   isDark ? 'border-sky-500 text-white hover:bg-sky-900/30' : 'border-sky-600 text-sky-600 hover:bg-sky-50'
                 }`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3schools.com/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                 </svg>
                 Watch Demo
@@ -297,7 +320,8 @@ const LandingPage = () => {
                     ? 'bg-sky-600 text-white shadow-md' 
                     : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
                 }`}
-                onClick={() => setActiveTab('diabetes')}
+                onClick={() => handleTabChange('diabetes')}
+                aria-selected={activeTab === 'diabetes'}
               >
                 Diabetes
               </button>
@@ -307,7 +331,8 @@ const LandingPage = () => {
                     ? 'bg-sky-600 text-white shadow-md' 
                     : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
                 }`}
-                onClick={() => setActiveTab('brainTumor')}
+                onClick={() => handleTabChange('brainTumor')}
+                aria-selected={activeTab === 'brainTumor'}
               >
                 Brain Tumor
               </button>
@@ -317,7 +342,8 @@ const LandingPage = () => {
                     ? 'bg-sky-600 text-white shadow-md' 
                     : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
                 }`}
-                onClick={() => setActiveTab('future')}
+                onClick={() => handleTabChange('future')}
+                aria-selected={activeTab === 'future'}
               >
                 Future Models
               </button>
@@ -325,7 +351,10 @@ const LandingPage = () => {
           </div>
           
           {/* Tab content */}
-          <div className={`${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-xl p-6 border transition-colors duration-300`}>
+          <div 
+            id="tab-content"
+            className={`${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-xl p-6 border transition-opacity duration-150`}
+          >
             {activeTab === 'diabetes' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div className="animate-fade-in">
@@ -598,31 +627,67 @@ const LandingPage = () => {
       <div id="demo" className={`py-20 ${isDark ? 'bg-slate-800' : 'bg-white'} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="md:w-1/2">
+            <div className="md:w-1/2 w-full">
+              {/* Enhanced video container with better play button */}
               <div className={`rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-50'} p-1 shadow-2xl transform transition-all duration-300 hover:scale-[1.02]`}>
                 <div className={`${isDark ? 'bg-slate-900' : 'bg-slate-50'} rounded-lg overflow-hidden relative`}>
+                  {/* Video header */}
                   <div className="bg-slate-800 p-2 flex items-center space-x-2">
                     <div className="w-3 h-3 rounded-full bg-rose-500"></div>
                     <div className="w-3 h-3 rounded-full bg-amber-500"></div>
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                     <div className="ml-3 text-sm text-slate-400">Healthcare AI Diagnostic Dashboard</div>
                   </div>
-                  <img 
-                    src="https://placehold.co/800x500/1e293b/38bdf8?text=System+Demo+Video" 
-                    alt="System Demo" 
-                    className="w-full"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <a href="#demo" className="w-20 h-20 bg-sky-600 rounded-full flex items-center justify-center shadow-lg cursor-pointer transform transition-transform hover:scale-110">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                      </svg>
-                    </a>
+                  
+                  {/* Video component with loading indicator */}
+                  <div className="relative aspect-video bg-slate-900">
+                    {isVideoLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-slate-400 border-t-sky-500 rounded-full animate-spin"></div>
+                      </div>
+                    )}
+                    
+                    <video 
+                      id="demo-video"
+                      className="w-full h-full object-cover"
+                      poster="https://placehold.co/800x500/1e293b/38bdf8?text=System+Demo+Video"
+                      onLoadStart={() => setIsVideoLoading(true)}
+                      onLoadedData={() => setIsVideoLoading(false)}
+                      onPlay={() => setIsVideoPlaying(true)}
+                      onPause={() => setIsVideoPlaying(false)}
+                      onEnded={() => setIsVideoPlaying(false)}
+                      controls={isVideoPlaying}
+                    >
+                      <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                    
+                    {/* Improved play button - only show when not playing */}
+                    {!isVideoPlaying && (
+                      <button 
+                        onClick={playVideo}
+                        className="absolute inset-0 flex items-center justify-center w-full h-full group focus:outline-none"
+                        aria-label="Play video"
+                      >
+                        <span className={`
+                          flex items-center justify-center rounded-full
+                          bg-sky-600/90 text-white
+                          w-20 h-20
+                          shadow-lg shadow-sky-900/50
+                          transition-all duration-300 ease-in-out
+                          group-hover:bg-sky-500 group-hover:scale-110
+                          group-focus:ring-4 group-focus:ring-sky-500/50
+                        `}>
+                          <Play className="w-10 h-10 ml-1" />
+                        </span>
+                        <span className="absolute inset-0 bg-slate-900/30 rounded-lg transition-opacity group-hover:opacity-0"></span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="md:w-1/2">
+            <div className="md:w-1/2 w-full mt-8 md:mt-0">
               <div className="inline-block px-3 py-1 rounded-full bg-sky-600 text-white text-sm font-semibold mb-4">
                 SYSTEM DEMONSTRATION
               </div>
@@ -734,7 +799,7 @@ const LandingPage = () => {
       </footer>
       
       {/* Additional CSS for animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes grow {
           0% { width: 0; }
           100% { width: 100%; }
@@ -778,6 +843,30 @@ const LandingPage = () => {
         
         .animate-pulse-slow {
           animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* More responsive design CSS for small screens */
+        @media (max-width: 640px) {
+          .animate-fade-in {
+            animation-duration: 0.5s;
+          }
+          
+          .max-w-2xl {
+            max-width: 100%;
+          }
+          
+          h1 {
+            font-size: 2.5rem;
+          }
+          
+          h2 {
+            font-size: 2rem;
+          }
+          
+          .py-20 {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+          }
         }
       `}</style>
     </div>

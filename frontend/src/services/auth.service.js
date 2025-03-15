@@ -1,8 +1,9 @@
 import api from './api';
 
-/**
- * Authentication service for handling user registration, login, and profile management
- */
+// Define storage keys
+const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'user';
+
 class AuthService {
   /**
    * Register a new user
@@ -13,8 +14,8 @@ class AuthService {
     try {
       const response = await api.post('/api/auth/register', userData);
       if (response.data.token) {
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem(TOKEN_KEY, response.data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
       }
       return response.data;
     } catch (error) {
@@ -32,8 +33,8 @@ class AuthService {
     try {
       const response = await api.post('/api/auth/login', { username, password });
       if (response.data.token) {
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem(TOKEN_KEY, response.data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
       }
       return response.data;
     } catch (error) {
@@ -45,8 +46,8 @@ class AuthService {
    * Logout the current user
    */
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   }
 
   /**
@@ -54,7 +55,7 @@ class AuthService {
    * @returns {Object|null} - User object or null if not logged in
    */
   getUser() {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem(USER_KEY);
     if (userStr) {
       try {
         return JSON.parse(userStr);
@@ -83,7 +84,7 @@ class AuthService {
    * @returns {boolean} - True if user is logged in
    */
   isLoggedIn() {
-    return !!localStorage.getItem('auth_token');
+    return !!localStorage.getItem(TOKEN_KEY);
   }
 
   /**
@@ -93,6 +94,29 @@ class AuthService {
   isAdmin() {
     const user = this.getUser();
     return user && user.role === 'admin';
+  }
+
+  /**
+   * Get the current user from local storage or return a default user
+   * @returns {Object|null} - User object or default user if not found
+   */
+  getCurrentUser() {
+    try {
+      const userStr = localStorage.getItem(USER_KEY);
+      if (userStr) {
+        return JSON.parse(userStr);
+      }
+      return {
+        first_name: 'Demo',
+        last_name: 'User',
+        username: 'demouser',
+        email: 'demo@example.com',
+        role: 'doctor'
+      };
+    } catch (error) {
+      console.error('Error retrieving user:', error);
+      return null;
+    }
   }
 }
 
