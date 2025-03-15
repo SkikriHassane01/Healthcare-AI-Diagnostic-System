@@ -11,6 +11,7 @@ const Register = () => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
+    role: 'doctor', // Default role
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ const Register = () => {
   const validateForm = () => {
     // Check all required fields
     if (!formData.username || !formData.email || !formData.password || 
-        !formData.confirmPassword || !formData.first_name || !formData.last_name) {
+        !formData.confirmPassword || !formData.first_name || !formData.last_name || !formData.role) {
       setError('All fields are required');
       return false;
     }
@@ -157,6 +158,22 @@ const Register = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
+          </div>
+          
+          <div className="mb-4">
+            <label htmlFor="role" className="block text-gray-700 mb-2">
+              Role
+            </label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+            >
+              <option value="doctor">Doctor</option>
+              <option value="admin">Administrator</option>
+            </select>
           </div>
           
           <div className="mb-4">
