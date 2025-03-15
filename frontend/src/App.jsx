@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// frontend/src/App.jsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Import authentication components
 import Login from './components/auth/Login';
@@ -6,42 +7,11 @@ import Register from './components/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './components/dashboard/Dashboard';
 
+// Import pages
+import LandingPage from './pages/LandingPage';
+
 // Import auth service
 import authService from './services/auth.service';
-
-// Simple placeholder components for routes
-const Home = () => {
-  // If logged in, redirect to dashboard
-  if (authService.isLoggedIn()) {
-    return <Navigate to="/dashboard" />;
-  }
-  
-  // Simple welcome page with links to auth pages
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">
-        Healthcare AI Diagnostic System
-      </h1>
-      <p className="text-gray-600 mb-8 text-center max-w-md">
-        Advanced diagnostic tools powered by artificial intelligence
-      </p>
-      <div className="flex space-x-4">
-        <a 
-          href="/login" 
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Sign In
-        </a>
-        <a 
-          href="/register" 
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-        >
-          Register
-        </a>
-      </div>
-    </div>
-  );
-};
 
 // Placeholder pages (will be replaced in later phases)
 const ProfilePage = () => <div className="p-8">User Profile (Coming Soon)</div>;
@@ -69,7 +39,7 @@ function App() {
     <Router>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
