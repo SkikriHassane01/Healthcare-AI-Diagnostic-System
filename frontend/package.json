@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "proxy": "http://locallhost:8000",
   "dependencies": {
     "@tailwindcss/typography": "^0.5.10",
     "axios": "^1.8.3",

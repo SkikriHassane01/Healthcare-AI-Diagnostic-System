@@ -27,7 +27,6 @@ const PatientList = () => {
   const [perPage] = useState(10);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
 
-  // Fetch patients on component mount and when dependencies change
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -53,23 +52,12 @@ const PatientList = () => {
       } catch (err) {
         console.error('PatientList: Error fetching patients:', err);
         setError(err.message || 'Failed to load patients. Please try again later.');
-        
-        // Try using mock data if available for development
-        try {
-          const mockData = patientService.getMockPatients();
-          console.log('PatientList: Using mock data:', mockData);
-          setPatients(mockData.patients);
-          setTotalPages(mockData.pagination.pages);
-          setTotalPatients(mockData.pagination.total);
-        } catch (mockErr) {
-          console.error('PatientList: Could not use mock data:', mockErr);
-          setPatients([]);
-        }
+        setPatients([]); // Don't use mock data
       } finally {
         setLoading(false);
       }
     };
-
+  
     // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(() => {
       fetchPatients();

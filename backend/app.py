@@ -12,7 +12,7 @@ from utils.db import init_db
 from config import Config
 from api.auth import auth_bp
 from api.patients import patients_bp
-
+from cors_middleware import FlaskCORSMiddleware
 def create_app(config_class=Config):
     """
     Application factory function
@@ -28,10 +28,12 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     logger.info(f"Application configured with {config_class.__name__}")
 
-    # Initialize CORS (Cross-Origin Resource Sharing)
-    # This allows the frontend to communicate with the API
-    CORS(app)
-    logger.info("CORS initialized")
+    # Configure CORS properly
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, 
+         supports_credentials=True)
+    logger.info("CORS initialized with proper settings")
+    
+    app.wsgi_app = FlaskCORSMiddleware(app.wsgi_app)
     
     # Initialize database connection
     init_db(app)
@@ -41,6 +43,9 @@ def create_app(config_class=Config):
         
     app.register_blueprint(patients_bp)
     logger.info("Patient routes registered")
+
+    # Ensure trailing slashes are handled correctly
+    app.url_map.strict_slashes = False
 
     @app.route('/', methods=['GET'])
     def home():

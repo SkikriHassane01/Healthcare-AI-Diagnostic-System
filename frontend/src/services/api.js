@@ -1,9 +1,5 @@
 import axios from 'axios';
 
-/**
- * Base API service for making HTTP requests to the backend
- * Creates a pre-configured axios instance
- */
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
@@ -11,8 +7,7 @@ const api = axios.create({
   },
 });
 
-// runs before each request
-// Add a request interceptor to include auth token with every request if available
+// Ensure authentication header is added to every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
@@ -24,15 +19,11 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// runs after each response
-// Add a response interceptor to handle common errors
+// Add better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle unauthorized errors (expired or invalid token)
-    if (error.response && error.response.status === 401) {
-      console.log('Authentication error:', error.response.data.message);
-    }
+    console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
