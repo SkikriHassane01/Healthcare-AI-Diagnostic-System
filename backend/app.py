@@ -11,6 +11,7 @@ logger = setup_logger('Main_Application')
 from utils.db import init_db
 from config import Config
 from api.auth import auth_bp
+from api.patients import patients_bp
 
 def create_app(config_class=Config):
     """
@@ -38,6 +39,8 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp)
     logger.info("Authentication routes registered")
         
+    app.register_blueprint(patients_bp)
+    logger.info("Patient routes registered")
 
     @app.route('/', methods=['GET'])
     def home():
