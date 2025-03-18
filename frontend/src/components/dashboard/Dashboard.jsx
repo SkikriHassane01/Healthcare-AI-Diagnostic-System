@@ -102,13 +102,13 @@ const Dashboard = () => {
               <Home className="h-5 w-5 mr-3" />
               <span>Dashboard</span>
             </a>
-            <a 
-              href="#" 
+            <Link 
+              to="/patients" 
               className={`flex items-center p-3 rounded-lg ${isDark ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-sky-800'} font-medium transition-colors`}
             >
               <Users className="h-5 w-5 mr-3" />
               <span>Patients</span>
-            </a>
+            </Link>
             <div className="pt-2 pb-2">
               <div className={`pl-3 mb-2 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'} font-medium`}>DIAGNOSTICS</div>
               <a 

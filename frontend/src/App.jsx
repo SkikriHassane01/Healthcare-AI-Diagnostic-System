@@ -12,10 +12,13 @@ import Dashboard from './components/dashboard/Dashboard';
 // Import pages
 import LandingPage from './pages/LandingPage';
 
+// Import patient components
+import PatientList from './components/patients/PatientList';
+import PatientDetail from './components/patients/PatientDetail';
+import PatientForm from './components/patients/PatientForm';
 
 // Placeholder pages (will be replaced in later phases)
 const ProfilePage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">User Profile (Coming Soon)</div>;
-const PatientsPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Patients Management (Coming Soon)</div>;
 const DiabetesPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Diabetes Screening Tool (Coming Soon)</div>;
 const BrainTumorPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Brain Tumor Detection Tool (Coming Soon)</div>;
 const AdminPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Admin Dashboard (Coming Soon)</div>;
@@ -37,31 +40,37 @@ const NotFound = () => (
 function App() {
   return (
     <ThemeProvider>
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        {/* Protected routes for authenticated users */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/patients" element={<PatientsPage />} />
-          <Route path="/diagnostics/diabetes" element={<DiabetesPage />} />
-          <Route path="/diagnostics/brain-tumor" element={<BrainTumorPage />} />
-        </Route>
-        
-        {/* Admin-only routes */}
-        <Route element={<ProtectedRoute requireAdmin={true} />}>
-          <Route path="/admin" element={<AdminPage />} />
-        </Route>
-        
-        {/* 404 route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Protected routes for authenticated users */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            
+            {/* Patient Management Routes */}
+            <Route path="/patients" element={<PatientList />} />
+            <Route path="/patients/new" element={<PatientForm mode="create" />} />
+            <Route path="/patients/:id" element={<PatientDetail />} />
+            <Route path="/patients/:id/edit" element={<PatientForm mode="edit" />} />
+            
+            <Route path="/diagnostics/diabetes" element={<DiabetesPage />} />
+            <Route path="/diagnostics/brain-tumor" element={<BrainTumorPage />} />
+          </Route>
+          
+          {/* Admin-only routes */}
+          <Route element={<ProtectedRoute requireAdmin={true} />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
+          
+          {/* 404 route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   );
 }
