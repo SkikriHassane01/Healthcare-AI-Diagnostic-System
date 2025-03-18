@@ -132,7 +132,7 @@ const LandingPage = () => {
                   isDark ? 'border-sky-500 text-white hover:bg-sky-900/30' : 'border-sky-600 text-sky-600 hover:bg-sky-50'
                 }`}
               >
-                <svg xmlns="http://www.w3schools.com/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                 </svg>
                 Watch Demo
@@ -142,7 +142,7 @@ const LandingPage = () => {
           <div className="md:w-1/2 animate-fade-in animation-delay-300">
             <div className={`relative p-4 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-xl border transform hover:-translate-y-1 transition-transform duration-300`}>
               <img 
-                src="https://placehold.co/800x500/1e293b/38bdf8?text=AI+Healthcare+Diagnostics" 
+                src="src/assets/images/about.jpg" 
                 alt="AI Diagnostics Platform" 
                 className="rounded-lg shadow-lg w-full"
               />
@@ -403,7 +403,7 @@ const LandingPage = () => {
                 </div>
                 <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} p-6 rounded-lg shadow-lg border transform transition-all duration-300 hover:shadow-2xl animate-fade-in animation-delay-300`}>
                   <img 
-                    src="https://placehold.co/600x400/1e293b/38bdf8?text=Diabetes+Prediction+Model" 
+                    src="src/assets/images/diabetes.jpg" 
                     alt="Diabetes Prediction Model" 
                     className="rounded-lg shadow-lg w-full"
                   />
@@ -475,7 +475,7 @@ const LandingPage = () => {
                 </div>
                 <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} p-6 rounded-lg shadow-lg border animate-fade-in animation-delay-300 transform transition-all duration-300 hover:shadow-2xl`}>
                   <img 
-                    src="https://placehold.co/600x400/1e293b/38bdf8?text=Brain+Tumor+Detection" 
+                    src="src/assets/images/brain_tumor.jpg" 
                     alt="Brain Tumor Detection Model" 
                     className="rounded-lg shadow-lg w-full"
                   />
@@ -799,7 +799,7 @@ const LandingPage = () => {
       </footer>
       
       {/* Additional CSS for animations */}
-      <style>{`
+      <style jsx>{`
         @keyframes grow {
           0% { width: 0; }
           100% { width: 100%; }
