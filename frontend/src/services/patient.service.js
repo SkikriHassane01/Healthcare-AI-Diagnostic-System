@@ -27,12 +27,16 @@ class PatientService {
   async createPatient(patientData) {
     try {
       console.log('Creating patient with data:', patientData);
-      // Ensure we use the URL without trailing slash
+      
+      // Ensure numbers are properly formatted
+      if (patientData.height) patientData.height = parseFloat(patientData.height);
+      if (patientData.weight) patientData.weight = parseFloat(patientData.weight);
+      
       const response = await api.post('/api/patients', patientData);
       console.log('Create patient response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error creating patient:', error);
+      console.error('Error creating patient:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to create patient');
     }
   }

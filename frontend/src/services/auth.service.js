@@ -12,13 +12,19 @@ class AuthService {
    */
   async register(userData) {
     try {
+      console.log('Registering user:', userData.username);
       const response = await api.post('/api/auth/register', userData);
+      
       if (response.data.token) {
+        console.log('Registration successful, storing token');
         localStorage.setItem(TOKEN_KEY, response.data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+      } else {
+        console.error('No token received in registration response');
       }
       return response.data;
     } catch (error) {
+      console.error('Registration error:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Registration failed');
     }
   }
@@ -31,17 +37,22 @@ class AuthService {
    */
   async login(username, password) {
     try {
+      console.log('Attempting login for:', username);
       const response = await api.post('/api/auth/login', { username, password });
+      
       if (response.data.token) {
+        console.log('Login successful, storing token');
         localStorage.setItem(TOKEN_KEY, response.data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+      } else {
+        console.error('No token received in login response');
       }
       return response.data;
     } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   }
-
   /**
    * Logout the current user
    */

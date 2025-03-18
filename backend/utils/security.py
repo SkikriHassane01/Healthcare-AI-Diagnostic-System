@@ -35,6 +35,8 @@ def generate_token(user_id):
             current_app.config.get('SECRET_KEY'),
             algorithm='HS256'
         )
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
         logger.info(f"Generated token for user ID: {user_id}")
         return token
     except Exception as e:
@@ -64,6 +66,7 @@ def token_required(f):
             auth_header = request.headers['Authorization']
             try:
                 token = auth_header.split(" ")[1] # Get token from "Bearer <token>"
+                logger.info(f"Token extracted from header: {token[:10]}...")
             except IndexError:
                 logger.warning("Invalid Authorization header format")
                 return jsonify({'message': 'Invalid token format'}), 401
@@ -80,6 +83,8 @@ def token_required(f):
                 current_app.config.get('SECRET_KEY'),
                 algorithms=['HS256']
             )
+            
+            logger.info(f"Token payload: {payload}")
             
             # Get user from database
             current_user = User.query.filter_by(id=payload['sub']).first()

@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 from pathlib import Path
 import sys
-import traceback
 
 sys.path.append(str(Path(__file__).resolve().parents[0]))
 
@@ -10,16 +8,12 @@ from utils.logger import setup_logger
 logger = setup_logger('Main_Application')
 
 from utils.db import init_db
+from models.user import User, UserRole
+from utils.db import db
 from config import Config
-from api.auth import auth_bp
-from api.patients import patients_bp
 
 def create_app(config_class=Config):
-    """
-    Application factory function
-    
-    Creates and configures the Flask application
-    """
+    """Application factory function"""
     logger.info("Creating Flask application")
     
     # Create Flask app instance
@@ -27,110 +21,86 @@ def create_app(config_class=Config):
     
     # Load configuration
     app.config.from_object(config_class)
-    logger.info(f"Application configured with {config_class.__name__}")
-
-    # Configure CORS properly - update with more comprehensive settings
-    CORS(app, 
-         resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, 
-         supports_credentials=True,
-         allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         expose_headers=["Content-Length", "X-Total-Count"],
-         max_age=600)
-    logger.info("CORS initialized with proper settings")
     
+    # IMPORTANT: Disable automatic slash behavior
+    app.url_map.strict_slashes = False
     
     # Initialize database connection
     init_db(app)
     
+    # Import blueprints here to avoid circular imports
+    from api.auth import auth_bp
+    from api.patients import patients_bp
+    
+    # Register blueprints
     app.register_blueprint(auth_bp)
-    logger.info("Authentication routes registered")
-        
     app.register_blueprint(patients_bp)
-    logger.info("Patient routes registered")
-
-    # Ensure trailing slashes are handled correctly
-    app.url_map.strict_slashes = False
-
+    
     @app.route('/', methods=['GET'])
     def home():
-        return jsonify({'message': 'Welcome to Healthcare AI Diagnostic System API'})
+        return jsonify({'message': 'Healthcare AI Diagnostic System API'})
 
     @app.route('/api/health', methods=['GET'])
     def health_check():
-        return jsonify(
-            {
-                'status': 'healthy',
-                'message': 'The Healthcare AI Diagnostic System API is up and running!'
-            }
-        )
+        return jsonify({'status': 'healthy'})
     
+    # Single CORS handler - no Flask-CORS dependency
     @app.after_request
-    def after_request(response):
-        """Ensure CORS headers are set correctly for all responses"""
-        # Add CORS headers for cases where Flask-CORS might miss
-        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
+    def add_cors_headers(response):
+        response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000')
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        response.headers.set('Access-Control-Allow-Credentials', 'true')
         
-        # Don't redirect OPTIONS requests
+        # Handle preflight requests
         if request.method == 'OPTIONS':
             return response
             
         return response
-
-    # Add an explicit route for OPTIONS requests
-    @app.route('/api/patients', methods=['OPTIONS'])
-    @app.route('/api/patients/', methods=['OPTIONS'])
-    def options_patients():
-        response = app.make_default_options_response()
-        return response
-
-    # Create a general OPTIONS handler for all routes
-    @app.route('/<path:path>', methods=['OPTIONS'])
-    def catch_all_options(path):
-        """Handle OPTIONS requests for all routes"""
-        response = app.make_default_options_response()
-        return response
-
+    
+    # Debug middleware to log requests
+    @app.before_request
+    def log_request():
+        logger.info(f"Request: {request.method} {request.path} {dict(request.args)}")
+        logger.info(f"Headers: {dict(request.headers)}")
+    
     # Error handlers
     @app.errorhandler(404)
     def not_found(e):
-        logger.warning(f"404 error: {request.path}")
         return jsonify({'message': 'Endpoint not found'}), 404
     
     @app.errorhandler(500)
     def server_error(e):
-        # Get the traceback info for better debugging
-        tb = traceback.format_exc()
-        logger.error(f"500 error: {str(e)}\nTraceback: {tb}")
-        logger.error(f"Request data: {request.data}")
-        logger.error(f"Request form: {request.form}")
-        logger.error(f"Request JSON: {request.get_json(silent=True)}")
-        
-        # Return a more helpful error message
-        return jsonify({
-            'message': 'Internal server error',
-            'error': str(e),
-            'status': 'error'
-        }), 500
+        return jsonify({'message': 'Internal server error'}), 500
     
-    # Add global exception handler
-    @app.errorhandler(Exception)
-    def handle_exception(e):
-        tb = traceback.format_exc()
-        logger.error(f"Unhandled exception: {str(e)}\nTraceback: {tb}")
-        
-        return jsonify({
-            'message': 'An unexpected error occurred',
-            'error': str(e),
-            'status': 'error'
-        }), 500
-    
-    logger.info("Application created successfully")
     return app
 
+def create_default_user(app):
+    """Create a default admin user if no users exist"""
+    with app.app_context():
+        if User.query.count() == 0:
+            logger.info("Creating default admin user")
+            try:
+                default_user = User(
+                    username="admin",
+                    email="admin@example.com",
+                    password="password123",
+                    first_name="Admin",
+                    last_name="User",
+                    role=UserRole.ADMIN
+                )
+                db.session.add(default_user)
+                db.session.commit()
+                logger.info(f"Default user created: {default_user.id}")
+            except Exception as e:
+                logger.error(f"Failed to create default user: {str(e)}")
+                db.session.rollback()
+
+# Create app instance
 app = create_app()
+
+# Create default user
+create_default_user(app)
+
 if __name__ == '__main__':
-    app.run(debug=True,port=8000,host='0.0.0.0')
+    app.run(debug=True, port=8000, host='0.0.0.0')

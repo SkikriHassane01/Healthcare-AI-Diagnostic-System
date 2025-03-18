@@ -15,7 +15,7 @@ logger = setup_logger(__name__)
 # create a blueprint for the patients routes
 patients_bp = Blueprint('patients', __name__, url_prefix="/api/patients")
 
-@patients_bp.route('/', methods=["POST"])
+@patients_bp.route('', methods=["POST"])
 @token_required
 def create_patient(current_user):
     """Create a new patient"""
@@ -50,6 +50,24 @@ def create_patient(current_user):
             return jsonify({'message': 'Invalid email format'}), 400
 
     try:
+        # Clean data to handle empty strings for numeric fields
+        # Convert empty strings to None for numeric fields
+        height = None
+        if 'height' in data and data['height'] not in ['', None]:
+            try:
+                height = float(data['height'])
+            except ValueError:
+                logger.warning(f"Create patient failed: invalid height value - {data['height']}")
+                return jsonify({'message': 'Height must be a valid number'}), 400
+                
+        weight = None
+        if 'weight' in data and data['weight'] not in ['', None]:
+            try:
+                weight = float(data['weight'])
+            except ValueError:
+                logger.warning(f"Create patient failed: invalid weight value - {data['weight']}")
+                return jsonify({'message': 'Weight must be a valid number'}), 400
+        
         # Create new patient
         new_patient = Patient(
             first_name=data['first_name'],
@@ -61,8 +79,8 @@ def create_patient(current_user):
             phone=data.get('phone'),
             address=data.get('address'),
             medical_history=data.get('medical_history'),
-            height=data.get('height'),
-            weight=data.get('weight'),
+            height=height,  # Use the cleaned value
+            weight=weight,  # Use the cleaned value
             allergies=data.get('allergies')
         )
         
@@ -82,7 +100,7 @@ def create_patient(current_user):
         logger.error(f"Create patient error: {str(e)}")
         return jsonify({'message': 'Patient creation failed. Please try again.'}), 500
 
-@patients_bp.route('/', methods=['GET'])
+@patients_bp.route('', methods=['GET'])
 @token_required
 def get_patients(current_user):
     """Get all patients for the current doctor"""
@@ -190,8 +208,29 @@ def update_patient(current_user, patient_id):
                 logger.warning(f"Update patient failed: invalid date format - {data['date_of_birth']}")
                 return jsonify({'message': 'Invalid date format for date_of_birth. Use YYYY-MM-DD'}), 400
         
-        # Update optional fields
-        optional_fields = ['email', 'phone', 'address', 'medical_history', 'height', 'weight', 'allergies']
+        # Clean and update numeric fields
+        if 'height' in data:
+            if data['height'] in ['', None]:
+                patient.height = None
+            else:
+                try:
+                    patient.height = float(data['height'])
+                except ValueError:
+                    logger.warning(f"Update patient failed: invalid height - {data['height']}")
+                    return jsonify({'message': 'Height must be a valid number'}), 400
+                
+        if 'weight' in data:
+            if data['weight'] in ['', None]:
+                patient.weight = None
+            else:
+                try:
+                    patient.weight = float(data['weight'])
+                except ValueError:
+                    logger.warning(f"Update patient failed: invalid weight - {data['weight']}")
+                    return jsonify({'message': 'Weight must be a valid number'}), 400
+        
+        # Update other optional fields
+        optional_fields = ['email', 'phone', 'address', 'medical_history', 'allergies']
         for field in optional_fields:
             if field in data:
                 setattr(patient, field, data[field])
