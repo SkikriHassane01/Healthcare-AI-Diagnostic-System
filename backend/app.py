@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pathlib import Path
 import sys
+import traceback
 
 sys.path.append(str(Path(__file__).resolve().parents[0]))
 
@@ -12,7 +13,7 @@ from utils.db import init_db
 from config import Config
 from api.auth import auth_bp
 from api.patients import patients_bp
-from cors_middleware import FlaskCORSMiddleware
+
 def create_app(config_class=Config):
     """
     Application factory function
@@ -28,12 +29,16 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     logger.info(f"Application configured with {config_class.__name__}")
 
-    # Configure CORS properly
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, 
-         supports_credentials=True)
+    # Configure CORS properly - update with more comprehensive settings
+    CORS(app, 
+         resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, 
+         supports_credentials=True,
+         allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         expose_headers=["Content-Length", "X-Total-Count"],
+         max_age=600)
     logger.info("CORS initialized with proper settings")
     
-    app.wsgi_app = FlaskCORSMiddleware(app.wsgi_app)
     
     # Initialize database connection
     init_db(app)
@@ -59,6 +64,36 @@ def create_app(config_class=Config):
                 'message': 'The Healthcare AI Diagnostic System API is up and running!'
             }
         )
+    
+    @app.after_request
+    def after_request(response):
+        """Ensure CORS headers are set correctly for all responses"""
+        # Add CORS headers for cases where Flask-CORS might miss
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        
+        # Don't redirect OPTIONS requests
+        if request.method == 'OPTIONS':
+            return response
+            
+        return response
+
+    # Add an explicit route for OPTIONS requests
+    @app.route('/api/patients', methods=['OPTIONS'])
+    @app.route('/api/patients/', methods=['OPTIONS'])
+    def options_patients():
+        response = app.make_default_options_response()
+        return response
+
+    # Create a general OPTIONS handler for all routes
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def catch_all_options(path):
+        """Handle OPTIONS requests for all routes"""
+        response = app.make_default_options_response()
+        return response
+
     # Error handlers
     @app.errorhandler(404)
     def not_found(e):
@@ -67,8 +102,31 @@ def create_app(config_class=Config):
     
     @app.errorhandler(500)
     def server_error(e):
-        logger.error(f"500 error: {str(e)}")
-        return jsonify({'message': 'Internal server error'}), 500
+        # Get the traceback info for better debugging
+        tb = traceback.format_exc()
+        logger.error(f"500 error: {str(e)}\nTraceback: {tb}")
+        logger.error(f"Request data: {request.data}")
+        logger.error(f"Request form: {request.form}")
+        logger.error(f"Request JSON: {request.get_json(silent=True)}")
+        
+        # Return a more helpful error message
+        return jsonify({
+            'message': 'Internal server error',
+            'error': str(e),
+            'status': 'error'
+        }), 500
+    
+    # Add global exception handler
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        tb = traceback.format_exc()
+        logger.error(f"Unhandled exception: {str(e)}\nTraceback: {tb}")
+        
+        return jsonify({
+            'message': 'An unexpected error occurred',
+            'error': str(e),
+            'status': 'error'
+        }), 500
     
     logger.info("Application created successfully")
     return app

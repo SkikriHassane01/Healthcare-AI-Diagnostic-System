@@ -1,30 +1,26 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from pathlib import Path
-import sys
 
-# add the models directory to the path 
-backend_dir = Path(__file__).resolve().parents[1]
-sys.path.append(str(backend_dir))
-
-
-from models import *
-
-from utils.logger import setup_logger
-logger = setup_logger("Utils_DB")
-
+# Initialize DB instance without importing models
 db = SQLAlchemy()
 
 def init_db(app):
+    from utils.logger import setup_logger
+    logger = setup_logger("utils_db")
     
-    logger.info("Initializing database with the app")
     try:
         db.init_app(app)
+        
+        from models.patient import Patient
+        from models.user import User
+        
         migrate = Migrate(app, db)
         
         with app.app_context():
+            # db.drop_all()
             db.create_all()
             db.session.commit()
+            
         logger.info("Database initialized successfully")
         return db
     except Exception as e:
