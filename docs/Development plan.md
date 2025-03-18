@@ -48,7 +48,6 @@ The Healthcare AI Diagnostic System will initially integrate:
 - Implement patient medical history tracking
 - Design and implement patient listing views
 - Create detailed patient profile view
-- Add basic data validation
 
 **Deliverables:**
 
