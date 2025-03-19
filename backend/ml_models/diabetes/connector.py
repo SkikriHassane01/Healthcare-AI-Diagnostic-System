@@ -190,50 +190,65 @@ class DiabetesModel:
         
         try:
             # Preprocess the input data
+            logger.info(f"Preprocessing input data: {data}")
             preprocessed_data = self.preprocess_input(data)
             
+            # Check if model exists
+            if self.model is None:
+                logger.error("Model not loaded - prediction cannot continue")
+                return {"error": "Model not loaded - please check server configuration"}
+            
             # Make prediction
-            prediction_proba = self.model.predict_proba(preprocessed_data)[0]
+            logger.info("Making prediction with model")
+            try:
+                prediction_proba = self.model.predict_proba(preprocessed_data)[0]
+                logger.info(f"Prediction probabilities: {prediction_proba}")
+            except Exception as model_error:
+                logger.error(f"Error during model prediction: {str(model_error)}")
+                return {"error": f"Model prediction failed: {str(model_error)}"}
+            
             prediction = int(prediction_proba[1] >= 0.5)  # 1 if probability >= 0.5, else 0
             
-            # Calculate risk factors (this is a simplified version)
-            risk_factors = self._calculate_risk_factors(data)
+            # Calculate risk factors
+            try:
+                risk_factors = self._calculate_risk_factors(data)
+            except Exception as rf_error:
+                logger.error(f"Error calculating risk factors: {str(rf_error)}")
+                risk_factors = []
             
-            # Create result dictionary
+            # Create result dictionary with explicit type conversion for JSON serialization
             result = {
-                "prediction": prediction,
+                "prediction": bool(prediction),
                 "probability": float(prediction_proba[1]),
                 "confidence": float(max(prediction_proba)),
                 "risk_factors": risk_factors,
                 "timestamp": datetime.utcnow().isoformat()
             }
             
-            # Store result in database if patient_id is provided and prevent database errors from affecting the response
+            logger.info(f"Prediction result created successfully")
+            
+            # Store result in database if patient_id is provided
             if context and "patient_id" in context:
                 try:
                     prediction_id = self._store_prediction(data, result, context["patient_id"])
-                    result["id"] = prediction_id
-                except Exception as e:
-                    logger.error(f"Error storing prediction in database: {str(e)}")
-                    # Add a flag to indicate storage failure but still return prediction
-                    result["storage_error"] = "Failed to store prediction in database"
+                    result["id"] = str(prediction_id)  # Ensure ID is a string for serialization
+                    logger.info(f"Stored prediction with ID: {prediction_id}")
+                except Exception as db_error:
+                    logger.error(f"Error storing prediction in database: {str(db_error)}")
+                    # Continue even if storage fails
+                    result["storage_error"] = "Failed to store prediction"
                     
-                    # If the error is related to missing tables, provide a hint
-                    if "relation" in str(e) and "does not exist" in str(e):
-                        result["storage_error_hint"] = "Database tables may not be initialized. Run initialize_db.py script."
-                        
-                    # If there's a transaction issue, try to rollback
+                    # Try to rollback the transaction
                     try:
                         db.session.rollback()
-                        logger.info("Database session rolled back")
-                    except Exception as rollback_error:
-                        logger.error(f"Error rolling back session: {str(rollback_error)}")
+                    except:
+                        pass
             
             return result
             
         except Exception as e:
-            logger.error(f"Error making diabetes prediction: {str(e)}")
-            return {"error": "An error occurred during prediction"}
+            logger.error(f"Error in diabetes prediction process: {str(e)}", exc_info=True)
+            return {"error": "An error occurred during prediction processing"}
     
     def _calculate_risk_factors(self, data):
         """

@@ -33,30 +33,38 @@ def predict_diabetes(current_user, patient_id):
         
         # Get the input data from the request
         data = request.json
+        logger.info(f"Received input data for prediction")
         
         # Generate patient name
         patient_name = f"{patient.first_name} {patient.last_name}"
         logger.info(f"Processing diabetes prediction for {patient_name}")
         
         # Make prediction using model registry
-        context = {"patient_id": patient_id, "doctor_id": current_user.id}
-        prediction = model_registry.predict(model_name="diabetes", data=data, context=context)
+        try:
+            context = {"patient_id": patient_id, "doctor_id": current_user.id}
+            prediction = model_registry.predict(model_name="diabetes", data=data, context=context)
+        except Exception as model_error:
+            logger.error(f"Error in model_registry.predict: {str(model_error)}", exc_info=True)
+            return jsonify({'message': 'Model prediction service error'}), 500
         
         if "error" in prediction:
             logger.error(f"Diabetes prediction error: {prediction['error']}")
             return jsonify({'message': prediction['error']}), 400
         
         # Format the prediction result to ensure it can be serialized to JSON
-        prediction_result = {
-            "result": prediction.get("prediction", False),
-            "probability": prediction.get("probability", 0),
-            "confidence": prediction.get("confidence", 0),
-            "risk_factors": prediction.get("risk_factors", []),
-            "timestamp": prediction.get("timestamp", ""),
-            "id": prediction.get("id", None)
-        }
-        
-        logger.info(f"Successfully created prediction for patient {patient_id}")
+        try:
+            # Safe conversion of values with defaults to ensure serialization works
+            prediction_result = {
+                "result": bool(prediction.get("prediction", False)),
+                "probability": float(prediction.get("probability", 0)),
+                "confidence": float(prediction.get("confidence", 0)),
+                "risk_factors": prediction.get("risk_factors", []),
+                "timestamp": str(prediction.get("timestamp", "")),
+                "id": prediction.get("id")
+            }
+        except Exception as format_error:
+            logger.error(f"Error formatting prediction result: {str(format_error)}", exc_info=True)
+            return jsonify({'message': 'Error formatting prediction result'}), 500
         
         # Return formatted results
         return jsonify({
@@ -66,7 +74,7 @@ def predict_diabetes(current_user, patient_id):
         }), 200
         
     except Exception as e:
-        logger.error(f"Error making diabetes prediction: {str(e)}")
+        logger.error(f"Error making diabetes prediction: {str(e)}", exc_info=True)
         db.session.rollback()  # Make sure to rollback any pending transactions
         return jsonify({'message': 'An error occurred during prediction'}), 500
 

@@ -91,14 +91,14 @@ class ModelRegistry:
         """Get all registered models with their metadata"""
         return {name: {"info": info["info"]} for name, info in self.models.items()}
     
-    def predict(self, model_name, data, patient_id=None):
+    def predict(self, model_name, data, context=None):
         """
         Make a prediction using the specified model
         
         Args:
             model_name (str): Name of the model to use
             data (dict): Input data for prediction
-            patient_id (str, optional): Patient ID if applicable
+            context (dict, optional): Additional context information such as patient_id, doctor_id
             
         Returns:
             dict: Prediction results
@@ -110,10 +110,7 @@ class ModelRegistry:
             return {"error": f"Model {model_name} not found"}
         
         try:
-            # Add patient_id to context if provided
-            context = {"patient_id": patient_id} if patient_id else {}
-            
-            # Make prediction
+            # Make prediction with context
             result = model.predict(data, context)
             logger.info(f"Prediction made with model {model_name}")
             
