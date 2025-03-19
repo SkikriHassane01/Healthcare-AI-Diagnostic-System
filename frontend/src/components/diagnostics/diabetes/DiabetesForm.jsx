@@ -449,7 +449,7 @@ const DiabetesForm = () => {
                 {/* Lab Results Section */}
                 <div className={`${isDark ? 'bg-slate-700' : 'bg-slate-50'} p-4 rounded-lg col-span-2`}>
                   <h3 className={`text-md font-medium mb-4 flex items-center ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                    <TestTube className="mr-2 h-5 w-5" />  {/* Changed from Flask to TestTube */}
+                    <TestTube className="mr-2 h-5 w-5" />
                     Lab Results
                   </h3>
                   
@@ -535,7 +535,7 @@ const DiabetesForm = () => {
           <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6`}>
             <h2 className="text-xl font-semibold mb-4">Diabetes Prediction Results</h2>
             
-            {/* Result Card */}
+            {/* Result Card - FIXED: Using confidence instead of probability */}
             <div className={`mb-6 p-4 rounded-lg ${
               predictionResult.result 
                 ? (isDark ? 'bg-rose-900/30 border-rose-700' : 'bg-rose-50 border-rose-200') 
@@ -568,7 +568,7 @@ const DiabetesForm = () => {
               <div className={`w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden`}>
                 <div 
                   className={`h-full ${predictionResult.result ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full`}
-                  style={{ width: `${predictionResult.probability * 100}%` }}
+                  style={{ width: `${predictionResult.confidence * 100}%` }}
                 ></div>
               </div>
               <div className="flex justify-between mt-1 text-sm">

@@ -39,6 +39,24 @@ const PatientDetail = () => {
     }
   };
   
+  // Helper function to safely format dates
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not available';
+    
+    try {
+      // Try to parse the date - if it fails, return a fallback
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Date not available';
+      }
+      
+      return date.toLocaleString();
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return 'Date format error';
+    }
+  };
+  
   if (loading) {
     return (
       <div className={`p-6 min-h-screen flex items-center justify-center ${isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}`}>
@@ -295,76 +313,6 @@ const PatientDetail = () => {
           </div>
         </div>
         
-        {/* Additional actions */}
-        <div className="flex justify-between items-center">
-          <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Last updated: {new Date(patient.updated_at).toLocaleString()}
-          </div>
-          <Link
-            to={`/patients/${id}/edit`}
-            className="flex items-center px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-md shadow-sm transition-colors"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Patient Information
-          </Link>
-        </div>
-      </div>
-      
-      {/* Delete confirmation modal */}
-      {deleteConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`${isDark ? 'bg-slate-800' : 'bg-white'} rounded-lg p-6 max-w-md mx-auto shadow-xl`}>
-            <div className="flex items-center mb-4">
-              <AlertTriangle className="w-6 h-6 text-rose-500 mr-3" />
-              <h3 className="text-lg font-semibold">Confirm Deletion</h3>
-            </div>
-            <p className={`mb-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              Are you sure you want to delete {patient.full_name}? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setDeleteConfirmation(false)}
-                className={`px-4 py-2 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'} transition-colors`}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md transition-colors"
-              >
-                Delete Patient
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Back Button and Actions */}
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={() => navigate('/patients')}
-          className={`flex items-center p-2 rounded-md ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'} transition-colors`}
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          <span>Back to Patients</span>
-        </button>
-        
-        <div className="flex space-x-3">
-          <Link
-            to={`/patients/${id}/edit`}
-            className="flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-md shadow-sm transition-colors"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Patient
-          </Link>
-          <button
-            onClick={() => setDeleteConfirmation(true)}
-            className="flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md shadow-sm transition-colors"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </button>
-        </div>
-        </div>
         {/* Diagnostics Section */}
         <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-xl shadow-sm border p-6 mb-6`}>
           <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>Diagnostic Tools</h2>
@@ -449,7 +397,7 @@ const PatientDetail = () => {
         {/* Additional actions */}
         <div className="flex justify-between items-center">
           <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Last updated: {new Date(patient.updated_at).toLocaleString()}
+            Last updated: {formatDate(patient.updated_at)}
           </div>
           <Link
             to={`/patients/${id}/edit`}
@@ -460,6 +408,36 @@ const PatientDetail = () => {
           </Link>
         </div>
       </div>
+      
+      {/* Delete confirmation modal */}
+      {deleteConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`${isDark ? 'bg-slate-800' : 'bg-white'} rounded-lg p-6 max-w-md mx-auto shadow-xl`}>
+            <div className="flex items-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-rose-500 mr-3" />
+              <h3 className="text-lg font-semibold">Confirm Deletion</h3>
+            </div>
+            <p className={`mb-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              Are you sure you want to delete {patient.full_name}? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirmation(false)}
+                className={`px-4 py-2 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-800'} transition-colors`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-md transition-colors"
+              >
+                Delete Patient
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

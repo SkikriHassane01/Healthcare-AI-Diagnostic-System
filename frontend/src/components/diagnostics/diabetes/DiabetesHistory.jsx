@@ -61,14 +61,26 @@ const DiabetesHistory = () => {
   
   // Format date for display
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    if (!dateString) return 'Date not available';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      
+      const options = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return date.toLocaleDateString(undefined, options);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return 'Date format error';
+    }
   };
   
   // Handle viewing a prediction's details
@@ -174,7 +186,7 @@ const DiabetesHistory = () => {
               </div>
             </div>
             
-            {/* Prediction Result Card */}
+            {/* Prediction Result Card - FIXED: Using confidence instead of probability */}
             <div className={`mb-6 p-4 rounded-lg ${
               selectedPrediction.prediction_result 
                 ? (isDark ? 'bg-rose-900/30 border-rose-700' : 'bg-rose-50 border-rose-200') 
@@ -200,7 +212,7 @@ const DiabetesHistory = () => {
                   </h3>
                   <div className="flex mt-1">
                     <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mr-4`}>
-                      Probability: {(selectedPrediction.prediction_probability * 100).toFixed(1)}%
+                      Confidence: {(selectedPrediction.prediction_probability * 100).toFixed(1)}%
                     </p>
                     
                     {/* Show doctor's assessment if available */}
@@ -393,10 +405,11 @@ const DiabetesHistory = () => {
                               ? (isDark ? 'text-rose-400' : 'text-rose-600')
                               : (isDark ? 'text-emerald-400' : 'text-emerald-600')
                           }`}>
+                            {/* FIXED: Display probability as confidence percentage */}
                             {(prediction.prediction_probability * 100).toFixed(1)}%
                           </span>
                           <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            Probability
+                            Confidence
                           </p>
                         </div>
                       </div>
