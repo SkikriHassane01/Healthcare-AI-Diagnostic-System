@@ -20,57 +20,55 @@ diagnostics_bp = Blueprint('diagnostics', __name__, url_prefix='/api/diagnostics
 @diagnostics_bp.route('/diabetes/predict/<patient_id>', methods=['POST'])
 @token_required
 def predict_diabetes(current_user, patient_id):
-    """
-    Make a diabetes prediction for a patient.
-    
-    Request body should contain all required features:
-    - gender: string
-    - age: number
-    - hypertension: 0 or 1
-    - heart_disease: 0 or 1
-    - smoking_history: string
-    - bmi: number
-    - HbA1c_level: number
-    - blood_glucose_level: number
-    """
+    """Make a diabetes prediction for a patient"""
     logger.info(f"Diabetes prediction request for patient {patient_id} from user {current_user.username}")
     
-    # Verify the patient exists and belongs to the current doctor
-    patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
-    if not patient:
-        logger.warning(f"Patient {patient_id} not found or doesn't belong to doctor {current_user.id}")
-        return jsonify({"message": "Patient not found"}), 404
-    
-    # Get prediction data from request
-    data = request.get_json()
-    if not data:
-        logger.warning("Missing request body for prediction")
-        return jsonify({"message": "Missing request data"}), 400
-    
-    # Make prediction using the model registry
     try:
-        result = model_registry.predict("diabetes", data, patient_id)
+        # Get the patient - make sure it belongs to the current doctor
+        patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
         
-        if "error" in result:
-            return jsonify({"message": result["error"]}), 400
-            
-        # Return the prediction result
+        if not patient:
+            logger.warning(f"Diabetes prediction failed: patient not found - {patient_id}")
+            return jsonify({'message': 'Patient not found'}), 404
+        
+        # Get the input data from the request
+        data = request.json
+        
+        # Generate patient name
+        patient_name = f"{patient.first_name} {patient.last_name}"
+        logger.info(f"Processing diabetes prediction for {patient_name}")
+        
+        # Make prediction using model registry
+        context = {"patient_id": patient_id, "doctor_id": current_user.id}
+        prediction = model_registry.predict(model_name="diabetes", data=data, context=context)
+        
+        if "error" in prediction:
+            logger.error(f"Diabetes prediction error: {prediction['error']}")
+            return jsonify({'message': prediction['error']}), 400
+        
+        # Format the prediction result to ensure it can be serialized to JSON
+        prediction_result = {
+            "result": prediction.get("prediction", False),
+            "probability": prediction.get("probability", 0),
+            "confidence": prediction.get("confidence", 0),
+            "risk_factors": prediction.get("risk_factors", []),
+            "timestamp": prediction.get("timestamp", ""),
+            "id": prediction.get("id", None)
+        }
+        
+        logger.info(f"Successfully created prediction for patient {patient_id}")
+        
+        # Return formatted results
         return jsonify({
-            "prediction": {
-                "result": bool(result["prediction"]),
-                "probability": result["probability"],
-                "confidence": result["confidence"],
-                "risk_factors": result["risk_factors"],
-                "patient": {
-                    "id": patient.id,
-                    "name": patient.full_name
-                }
-            }
+            'prediction': prediction_result,
+            'patient_id': patient_id,
+            'patient_name': patient_name
         }), 200
         
     except Exception as e:
         logger.error(f"Error making diabetes prediction: {str(e)}")
-        return jsonify({"message": "An error occurred during prediction"}), 500
+        db.session.rollback()  # Make sure to rollback any pending transactions
+        return jsonify({'message': 'An error occurred during prediction'}), 500
 
 @diagnostics_bp.route('/diabetes/history/<patient_id>', methods=['GET'])
 @token_required
@@ -94,7 +92,7 @@ def get_diabetes_history(current_user, patient_id):
         return jsonify({
             "patient": {
                 "id": patient.id,
-                "name": patient.full_name
+                "name": f"{patient.first_name} {patient.last_name}"
             },
             "history": history
         }), 200
@@ -128,7 +126,7 @@ def get_diabetes_prediction(current_user, prediction_id):
             "prediction": prediction.to_dict(),
             "patient": {
                 "id": patient.id,
-                "name": patient.full_name
+                "name": f"{patient.first_name} {patient.last_name}"
             }
         }), 200
         

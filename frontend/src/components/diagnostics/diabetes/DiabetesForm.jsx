@@ -169,21 +169,27 @@ const DiabetesForm = () => {
     setPredictionResult(null);
     
     try {
-      // Convert numeric strings to numbers
+      // Make sure all fields are properly formatted for the backend
       const dataForPrediction = {
-        ...formData,
+        gender: formData.gender,
         age: parseFloat(formData.age),
+        hypertension: parseInt(formData.hypertension),
+        heart_disease: parseInt(formData.heart_disease), 
+        smoking_history: formData.smoking_history,
         bmi: parseFloat(formData.bmi),
         HbA1c_level: parseFloat(formData.HbA1c_level),
         blood_glucose_level: parseFloat(formData.blood_glucose_level)
       };
       
+      console.log("Sending prediction data:", dataForPrediction);
+      
       // Make prediction
       const result = await diagnosticsService.predictDiabetes(patientId, dataForPrediction);
+      console.log("Prediction result received:", result);
       setPredictionResult(result.prediction);
     } catch (err) {
+      console.error("Prediction error:", err);
       setError(err.message || 'Failed to make prediction. Please try again.');
-      console.error(err);
     } finally {
       setPredicting(false);
     }

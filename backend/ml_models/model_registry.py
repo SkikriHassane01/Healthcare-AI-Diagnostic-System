@@ -81,7 +81,7 @@ class ModelRegistry:
     
     def get_model(self, model_name):
         """Get a specific model by name"""
-        if model_name not in self.models:
+        if (model_name not in self.models):
             logger.warning(f"Model {model_name} not found in registry")
             return None
             
@@ -116,6 +116,10 @@ class ModelRegistry:
             # Make prediction
             result = model.predict(data, context)
             logger.info(f"Prediction made with model {model_name}")
+            
+            # Log the prediction result structure for debugging
+            logger.info(f"Prediction result structure: {type(result)}")
+            logger.info(f"Prediction result keys: {result.keys() if isinstance(result, dict) else 'Not a dict'}")
             
             # Return results
             return result

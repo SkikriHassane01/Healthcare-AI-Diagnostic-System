@@ -23,13 +23,41 @@ class DiagnosticsService {
    */
   async predictDiabetes(patientId, data) {
     try {
+      // Log the data being sent to API for debugging
       console.log(`Making diabetes prediction for patient ${patientId}:`, data);
-      const response = await api.post(`/api/diagnostics/diabetes/predict/${patientId}`, data);
+      
+      // Ensure all required fields are properly formatted
+      const formattedData = {
+        gender: data.gender,
+        age: parseFloat(data.age),
+        hypertension: parseInt(data.hypertension),
+        heart_disease: parseInt(data.heart_disease),
+        smoking_history: data.smoking_history,
+        bmi: parseFloat(data.bmi),
+        HbA1c_level: parseFloat(data.HbA1c_level),
+        blood_glucose_level: parseFloat(data.blood_glucose_level)
+      };
+      
+      // Make API request with formatted data
+      const response = await api.post(`/api/diagnostics/diabetes/predict/${patientId}`, formattedData);
       console.log('Diabetes prediction response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error making diabetes prediction:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to make diabetes prediction');
+      // More detailed error logging
+      if (error.response) {
+        console.error('Error making diabetes prediction:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        throw new Error(error.response.data?.message || 'Failed to make diabetes prediction');
+      } else if (error.request) {
+        console.error('No response received from server:', error.request);
+        throw new Error('No response received from server');
+      } else {
+        console.error('Error making diabetes prediction:', error.message);
+        throw new Error('Error sending request: ' + error.message);
+      }
     }
   }
 

@@ -45,6 +45,11 @@ class Patient(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     
+    @property
+    def full_name(self):
+        """Get the patient's full name"""
+        return f"{self.first_name} {self.last_name}"
+    
     def __init__(self, first_name, last_name, date_of_birth, gender, doctor_id, **kwargs):
         self.first_name = first_name
         self.last_name = last_name

@@ -1,14 +1,17 @@
 import os
 import joblib
 import numpy as np
+import pandas as pd
 from datetime import datetime
 import sys
 from pathlib import Path
+from typing import Dict, Optional
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.logger import setup_logger
 from utils.db import db
 from models.diagnostic import DiabetesPrediction
+from .feature_engineering import FeatureEngineer
 
 logger = setup_logger("diabetes_model")
 
@@ -23,6 +26,7 @@ class DiabetesModel:
         """Initialize the model by loading from disk"""
         self.model_path = os.path.join(os.path.dirname(__file__), 'diabetes_model.pkl')
         self.model = self._load_model()
+        self.feature_engineer = FeatureEngineer()
         
         # Define feature information for validation and preprocessing
         self.features_info = {
@@ -44,8 +48,12 @@ class DiabetesModel:
         
         # Define the expected order of features for the model
         self.feature_order = [
-            "gender", "age", "hypertension", "heart_disease", 
-            "smoking_history", "bmi", "HbA1c_level", "blood_glucose_level"
+            "gender", "age", "hypertension", "heart_disease", "smoking_history", 
+            "bmi", "bmi_category", "age_risk", "age_bmi_interaction", 
+            "medical_risk_score", "metabolic_score", "lifestyle_score",
+            "age_hypertension", "age_heart_disease", "cardio_metabolic_risk",
+            "combined_risk_score", "smoking_risk", 
+            "HbA1c_level", "blood_glucose_level"
         ]
         
         # Define mapping for categorical features
@@ -135,6 +143,10 @@ class DiabetesModel:
         Returns:
             numpy.ndarray: Preprocessed input data ready for the model
         """
+        # Apply comprehensive feature engineering to create all derived features
+        enhanced_data = self.feature_engineer.transform(data)
+        logger.info(f"Features created: {list(enhanced_data.keys())}")
+        
         # Create a list to store the preprocessed features in the correct order
         preprocessed = []
         
@@ -142,16 +154,20 @@ class DiabetesModel:
         for feature in self.feature_order:
             if feature == "gender":
                 # Map gender to numeric value
-                preprocessed.append(self.gender_mapping[data[feature]])
+                preprocessed.append(self.gender_mapping[enhanced_data[feature]])
             elif feature == "smoking_history":
                 # Map smoking history to numeric value
-                preprocessed.append(self.smoking_history_mapping[data[feature]])
+                preprocessed.append(self.smoking_history_mapping[enhanced_data[feature]])
             elif feature in self.features_info["continuous"]:
                 # Convert continuous features to float
-                preprocessed.append(float(data[feature]))
+                preprocessed.append(float(enhanced_data[feature]))
+            elif feature in enhanced_data:
+                # Use the engineered feature if it exists
+                preprocessed.append(enhanced_data[feature])
             else:
-                # Binary features are already numeric
-                preprocessed.append(data[feature])
+                # If a feature is missing, use a default value of 0
+                logger.warning(f"Feature {feature} was not found in engineered data, using default value")
+                preprocessed.append(0)
         
         return np.array([preprocessed])
     
@@ -192,12 +208,26 @@ class DiabetesModel:
                 "timestamp": datetime.utcnow().isoformat()
             }
             
-            # Store result in database if patient_id is provided
+            # Store result in database if patient_id is provided and prevent database errors from affecting the response
             if context and "patient_id" in context:
                 try:
-                    self._store_prediction(data, result, context["patient_id"])
+                    prediction_id = self._store_prediction(data, result, context["patient_id"])
+                    result["id"] = prediction_id
                 except Exception as e:
-                    logger.error(f"Error storing prediction: {str(e)}")
+                    logger.error(f"Error storing prediction in database: {str(e)}")
+                    # Add a flag to indicate storage failure but still return prediction
+                    result["storage_error"] = "Failed to store prediction in database"
+                    
+                    # If the error is related to missing tables, provide a hint
+                    if "relation" in str(e) and "does not exist" in str(e):
+                        result["storage_error_hint"] = "Database tables may not be initialized. Run initialize_db.py script."
+                        
+                    # If there's a transaction issue, try to rollback
+                    try:
+                        db.session.rollback()
+                        logger.info("Database session rolled back")
+                    except Exception as rollback_error:
+                        logger.error(f"Error rolling back session: {str(rollback_error)}")
             
             return result
             
