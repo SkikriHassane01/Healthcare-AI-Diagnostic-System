@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { ThemeProvider } from './context/ThemeContext'
@@ -17,9 +16,12 @@ import PatientList from './components/patients/PatientList';
 import PatientDetail from './components/patients/PatientDetail';
 import PatientForm from './components/patients/PatientForm';
 
+// Import diagnostic components
+import DiabetesForm from './components/diagnostics/diabetes/DiabetesForm';
+import DiabetesHistory from './components/diagnostics/diabetes/DiabetesHistory';
+
 // Placeholder pages (will be replaced in later phases)
 const ProfilePage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">User Profile (Coming Soon)</div>;
-const DiabetesPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Diabetes Screening Tool (Coming Soon)</div>;
 const BrainTumorPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Brain Tumor Detection Tool (Coming Soon)</div>;
 const AdminPage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">Admin Dashboard (Coming Soon)</div>;
 
@@ -58,7 +60,9 @@ function App() {
             <Route path="/patients/:id" element={<PatientDetail />} />
             <Route path="/patients/:id/edit" element={<PatientForm mode="edit" />} />
             
-            <Route path="/diagnostics/diabetes" element={<DiabetesPage />} />
+            {/* Diagnostic Routes */}
+            <Route path="/patients/:patientId/diabetes-assessment" element={<DiabetesForm />} />
+            <Route path="/patients/:patientId/diabetes-history" element={<DiabetesHistory />} />
             <Route path="/diagnostics/brain-tumor" element={<BrainTumorPage />} />
           </Route>
           
