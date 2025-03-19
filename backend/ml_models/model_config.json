@@ -1,0 +1,11 @@
+{
+    "models": {
+        "diabetes": {
+            "connector": "ml_models.diabetes.connector",
+            "class": "DiabetesModel",
+            "type": "tabular",
+            "version": "1.0.0",
+            "enabled": true
+        }
+    }
+}
