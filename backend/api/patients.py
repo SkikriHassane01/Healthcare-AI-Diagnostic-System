@@ -184,9 +184,6 @@ def update_patient(current_user, patient_id):
     logger.info(f"Update patient request from user: {current_user.username}, patient ID: {patient_id}")
     data = request.get_json()
     
-    # Log the incoming data to debug
-    logger.debug(f"Update patient data received: {data}")
-    
     try:
         # Get patient - ensure it belongs to the current doctor
         patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
@@ -195,16 +192,6 @@ def update_patient(current_user, patient_id):
             logger.warning(f"Update patient failed: patient not found - {patient_id}")
             return jsonify({'message': 'Patient not found'}), 404
         
-        # IMPORTANT: Explicitly handle the is_active field first
-        if 'is_active' in data:
-            logger.info(f"Updating patient active status: {data['is_active']}")
-            patient.is_active = bool(data['is_active'])  # Ensure boolean conversion
-        
-        # Handle legacy 'active' field for backward compatibility
-        elif 'active' in data:
-            logger.info(f"Updating patient active status (legacy field): {data['active']}")
-            patient.is_active = bool(data['active'])  # Ensure boolean conversion
-            
         # Update basic fields if provided
         if 'first_name' in data and data['first_name']:
             patient.first_name = data['first_name']
@@ -263,10 +250,7 @@ def update_patient(current_user, patient_id):
         # Save changes
         db.session.commit()
         
-        # Refresh the patient from the database to ensure we return the latest data
-        db.session.refresh(patient)
-        
-        logger.info(f"Patient updated successfully: {patient.first_name} {patient.last_name}, is_active: {patient.is_active}")
+        logger.info(f"Patient updated successfully: {patient.first_name} {patient.last_name}")
         
         return jsonify({
             'message': 'Patient updated successfully',

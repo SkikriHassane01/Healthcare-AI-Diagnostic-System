@@ -28,13 +28,15 @@ def create_app(config_class=Config):
     # Initialize database connection
     init_db(app)
     
-    # Import blueprints here to avoid circular imports
+    # Import blueprints
     from api.auth import auth_bp
     from api.patients import patients_bp
+    from api.diagnostics import diagnostics_bp
     
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(patients_bp)
+    app.register_blueprint(diagnostics_bp)
     
     @app.route('/', methods=['GET'])
     def home():
