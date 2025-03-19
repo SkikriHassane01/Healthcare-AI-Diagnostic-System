@@ -82,23 +82,23 @@ const PatientList = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  // Handle patient deletion
-  const handleDeletePatient = async (patientId) => {
+  // Handle permanent patient deletion
+  const handlePermanentDelete = async (patientId) => {
     try {
-      await patientService.deletePatient(patientId);
+      await patientService.deletePatient(patientId, true); // true = permanent deletion
       // Remove patient from the list without refetching
       setPatients(patients.filter(p => p.id !== patientId));
       setTotalPatients(prev => prev - 1);
       setDeleteConfirmation(null);
     } catch (err) {
-      setError(err.message || 'Failed to delete patient');
+      setError(err.message || 'Failed to permanently delete patient');
     }
   };
 
-  // Handle patient deactivation
+  // Handle patient deactivation (soft delete)
   const handleDeactivatePatient = async (patientId) => {
     try {
-      await patientService.updatePatient(patientId, { active: false });
+      await patientService.deletePatient(patientId, false); // false = deactivate only
       // Update patient status without refetching the whole list
       setPatients(patients.map(p => 
         p.id === patientId ? { ...p, active: false } : p

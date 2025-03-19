@@ -84,38 +84,25 @@ class PatientService {
   }
 
   /**
-   * Delete a patient
-   * @param {string} id - Patient ID
-   * @returns {Promise} - API response
-   */
-  async deletePatient(id) {
+     * Delete a patient - either permanently or by deactivating
+     * @param {string} id - Patient ID
+     * @param {boolean} permanent - Whether to permanently delete (true) or just deactivate (false)
+     * @returns {Promise} - API response
+     */
+  async deletePatient(id, permanent = false) {
     try {
-      console.log(`Deleting patient with ID: ${id}`);
-      const response = await api.delete(`/api/patients/${id}`);
+      console.log(`${permanent ? 'Permanently deleting' : 'Deactivating'} patient with ID: ${id}`);
+      
+      // Send permanent flag in request body
+      const response = await api.delete(`/api/patients/${id}`, {
+        data: { permanent }
+      });
+      
       console.log('Delete patient response:', response.data);
       return response.data;
     } catch (error) {
-      console.error(`Error deleting patient ${id}:`, error);
-      throw new Error(error.response?.data?.message || 'Failed to delete patient');
-    }
-  }
-
-  // Error handler
-  handleError(error) {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      const message = 
-        error.response.data.message || 
-        error.response.data.detail ||
-        'An error occurred with the response';
-      throw new Error(message);
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new Error('No response from server. Please check your connection.');
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      throw new Error(error.message || 'An unexpected error occurred');
+      console.error(`Error ${permanent ? 'deleting' : 'deactivating'} patient ${id}:`, error);
+      throw new Error(error.response?.data?.message || `Failed to ${permanent ? 'delete' : 'deactivate'} patient`);
     }
   }
 }

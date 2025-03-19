@@ -259,65 +259,44 @@ def update_patient(current_user, patient_id):
 
 @patients_bp.route('/<patient_id>', methods=['DELETE'])
 @token_required
-def archive_patient(current_user, patient_id):
-    """Archive a patient (soft delete)"""
-    logger.info(f"Archive patient request from user: {current_user.username}, patient ID: {patient_id}")
+def delete_patient(current_user, patient_id):
+    """
+    Handle patient deletion. Can either:
+    1. Permanently delete the patient (with 'permanent=true' in request body)
+    2. Deactivate the patient (mark as inactive - default behavior)
+    """
+    logger.info(f"Delete/deactivate patient request from user: {current_user.username}, patient ID: {patient_id}")
     
     try:
         # Get patient - ensure it belongs to the current doctor
         patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
         
         if not patient:
-            logger.warning(f"Archive patient failed: patient not found - {patient_id}")
+            logger.warning(f"Delete/deactivate patient failed: patient not found - {patient_id}")
             return jsonify({'message': 'Patient not found'}), 404
         
-        # Set to inactive (soft delete)
-        patient.is_active = False
-        db.session.commit()
+        # Check if permanent deletion was requested
+        data = request.get_json() or {}
+        permanent = data.get('permanent', False)
         
-        logger.info(f"Patient archived successfully: {patient.first_name} {patient.last_name}")
-        
-        return jsonify({
-            'message': 'Patient archived successfully'
-        }), 200
+        if permanent:
+            # Permanently delete the patient from the database
+            db.session.delete(patient)
+            db.session.commit()
+            logger.info(f"Patient permanently deleted: {patient.first_name} {patient.last_name}")
+            return jsonify({
+                'message': 'Patient permanently deleted'
+            }), 200
+        else:
+            # Set to inactive (soft delete)
+            patient.is_active = False
+            db.session.commit()
+            logger.info(f"Patient deactivated: {patient.first_name} {patient.last_name}")
+            return jsonify({
+                'message': 'Patient deactivated successfully'
+            }), 200
         
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Archive patient error: {str(e)}")
-        return jsonify({'message': 'Patient archival failed. Please try again.'}), 500
-
-@patients_bp.route('/<patient_id>/status', methods=['PATCH'])
-@token_required
-def update_patient_status(current_user, patient_id):
-    """Update a patient's active status"""
-    logger.info(f"Update patient status request from user: {current_user.username}, patient ID: {patient_id}")
-    data = request.get_json()
-    
-    try:
-        # Get patient - ensure it belongs to the current doctor
-        patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
-        
-        if not patient:
-            logger.warning(f"Update patient status failed: patient not found - {patient_id}")
-            return jsonify({'message': 'Patient not found'}), 404
-        
-        # Check if active status is provided in the request
-        if 'active' not in data:
-            logger.warning(f"Update patient status failed: 'active' field not provided")
-            return jsonify({'message': 'Active status not provided'}), 400
-        
-        # Update the active status - map 'active' from frontend to 'is_active' in model
-        patient.is_active = data['active']
-        db.session.commit()
-        
-        logger.info(f"Patient status updated successfully: {patient.first_name} {patient.last_name}, active: {patient.is_active}")
-        
-        return jsonify({
-            'message': 'Patient status updated successfully',
-            'patient': patient.to_dict()
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Update patient status error: {str(e)}")
-        return jsonify({'message': 'Patient status update failed. Please try again.'}), 500
+        logger.error(f"Delete/deactivate patient error: {str(e)}")
+        return jsonify({'message': 'Operation failed. Please try again.'}), 500
