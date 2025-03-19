@@ -738,18 +738,11 @@ const LandingPage = () => {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link
+          <Link
               to={isLoggedIn ? "/dashboard" : "/register"}
-              className="px-8 py-4 bg-white text-sky-700 font-medium rounded-md shadow-lg hover:bg-slate-100 transition-colors text-center transform hover:scale-105 duration-200"
-            >
-              {isLoggedIn ? "Go to Dashboard" : "Get Started Now"}
-            </Link>
-            <Link
-              to="/contact"
-              className="px-8 py-4 bg-sky-700 text-white font-medium rounded-md shadow-lg border border-sky-500 hover:bg-sky-800 transition-colors text-center transform hover:scale-105 duration-200"
-            >
-              Request Demo
-            </Link>
+              className="flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-md text-white bg-sky-600 hover:bg-sky-500 transition-colors transform hover:scale-105 duration-200">
+              Get Started Now
+          </Link>
           </div>
         </div>
       </div>

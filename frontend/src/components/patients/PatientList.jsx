@@ -9,7 +9,9 @@ import {
   ChevronRight, 
   Edit, 
   Trash2, 
-  Eye
+  Eye,
+  ArrowLeft,
+  UserX
 } from 'lucide-react';
 
 const PatientList = () => {
@@ -26,6 +28,7 @@ const PatientList = () => {
   const [totalPatients, setTotalPatients] = useState(0);
   const [perPage] = useState(10);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [modalMode, setModalMode] = useState('delete'); // 'delete' or 'manage'
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -92,26 +95,60 @@ const PatientList = () => {
     }
   };
 
-  // Confirm deletion modal
-  const DeleteConfirmation = ({ patient, onConfirm, onCancel }) => (
+  // Handle patient deactivation
+  const handleDeactivatePatient = async (patientId) => {
+    try {
+      await patientService.updatePatient(patientId, { active: false });
+      // Update patient status without refetching the whole list
+      setPatients(patients.map(p => 
+        p.id === patientId ? { ...p, active: false } : p
+      ));
+      setDeleteConfirmation(null);
+    } catch (err) {
+      setError(err.message || 'Failed to deactivate patient');
+    }
+  };
+
+  // Handle patient reactivation
+  const handleReactivatePatient = async (patientId) => {
+    try {
+      await patientService.updatePatient(patientId, { active: true });
+      setPatients(patients.map(p => 
+        p.id === patientId ? { ...p, active: true } : p
+      ));
+    } catch (err) {
+      setError(err.message || 'Failed to reactivate patient');
+    }
+  };
+
+  // Confirm deletion/management modal
+  const DeleteConfirmation = ({ patient, onConfirm, onDeactivate, onCancel }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div className={`${isDark ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-xl p-6 max-w-md mx-4`}>
-        <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
+        <h3 className="text-lg font-bold mb-4">Patient Management</h3>
         <p className={`${isDark ? 'text-slate-300' : 'text-slate-700'} mb-6`}>
-          Are you sure you want to remove <span className="font-semibold">{patient.full_name}</span>? This action cannot be undone.
+          What would you like to do with <span className="font-semibold">{patient.full_name}</span>?
         </p>
-        <div className="flex justify-end space-x-4">
+        <div className="flex flex-col space-y-3">
+          <button
+            onClick={onDeactivate}
+            className={`px-4 py-2 rounded-md ${isDark ? 'bg-amber-600 hover:bg-amber-700' : 'bg-amber-500 hover:bg-amber-600'} text-white transition-colors flex items-center justify-center`}
+          >
+            <UserX className="w-4 h-4 mr-2" />
+            Mark as Inactive
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white transition-colors flex items-center justify-center"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete Permanently
+          </button>
           <button
             onClick={onCancel}
             className={`px-4 py-2 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'} transition-colors`}
           >
             Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white transition-colors"
-          >
-            Delete
           </button>
         </div>
       </div>
@@ -123,15 +160,24 @@ const PatientList = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header with title and add button */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h1 className="text-2xl font-bold mb-4 md:mb-0">Patient Management</h1>
+        <h1 className="text-2xl font-bold mb-4 md:mb-0">Patient Management</h1>
+        <div className="flex space-x-4">
+          <Link
+            to="/dashboard"
+            className="flex items-center justify-center px-4 py-2 border border-sky-600 text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:border-sky-400 dark:hover:bg-sky-900/30 rounded-md shadow-sm transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back to Dashboard
+          </Link>
           <Link
             to="/patients/new"
-            className="flex items-center justify-center px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-md shadow-md transition-colors transform hover:scale-105 duration-200"
+            className="flex items-center justify-center px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-md shadow-md transition-colors"
           >
             <UserPlus className="w-5 h-5 mr-2" />
             Add New Patient
           </Link>
         </div>
+      </div>
         
         {/* Search and Filters */}
         <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-4 mb-6`}>
@@ -197,6 +243,9 @@ const PatientList = () => {
                     <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-500'} uppercase tracking-wider hidden md:table-cell`}>
                       Contact
                     </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-500'} uppercase tracking-wider`}>
+                      Status
+                    </th>
                     <th className={`px-6 py-3 text-right text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-500'} uppercase tracking-wider`}>
                       Actions
                     </th>
@@ -206,7 +255,7 @@ const PatientList = () => {
                   {patients.map((patient) => (
                     <tr 
                       key={patient.id} 
-                      className={`${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
+                      className={`${patient.active === false ? (isDark ? 'bg-slate-700/30' : 'bg-slate-100') : ''} ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
                       onClick={() => navigate(`/patients/${patient.id}`)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -217,7 +266,9 @@ const PatientList = () => {
                             </span>
                           </div>
                           <div className="ml-4">
-                            <div className="font-medium">{patient.full_name}</div>
+                            <div className={`font-medium ${patient.active === false ? (isDark ? 'text-slate-400' : 'text-slate-500') : ''}`}>
+                              {patient.full_name}
+                            </div>
                             <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'} md:hidden`}>
                               {patient.age} y/o, {patient.gender === 'male' ? 'M' : patient.gender === 'female' ? 'F' : 'Other'}
                             </div>
@@ -243,6 +294,17 @@ const PatientList = () => {
                           {patient.phone || 'No phone number'}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span 
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                            patient.active === false 
+                              ? (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600') 
+                              : (isDark ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-800')
+                          }`}
+                        >
+                          {patient.active === false ? 'Inactive' : 'Active'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                         <button
                           onClick={(e) => {
@@ -266,17 +328,34 @@ const PatientList = () => {
                         >
                           <Edit className={`h-4 w-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
                         </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteConfirmation(patient);
-                          }}
-                          className={`inline-flex items-center p-1.5 rounded-full ${
-                            isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
-                          } transition-colors`}
-                        >
-                          <Trash2 className={`h-4 w-4 ${isDark ? 'text-rose-400' : 'text-rose-600'}`} />
-                        </button>
+                        {patient.active === false ? (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReactivatePatient(patient.id);
+                            }}
+                            className={`inline-flex items-center p-1.5 rounded-full ${
+                              isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
+                            } transition-colors`}
+                            title="Reactivate patient"
+                          >
+                            <svg className={`h-4 w-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirmation(patient);
+                            }}
+                            className={`inline-flex items-center p-1.5 rounded-full ${
+                              isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
+                            } transition-colors`}
+                          >
+                            <Trash2 className={`h-4 w-4 ${isDark ? 'text-rose-400' : 'text-rose-600'}`} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -332,11 +411,12 @@ const PatientList = () => {
           </div>
         )}
         
-        {/* Delete Confirmation Modal */}
+        {/* Delete/Manage Confirmation Modal */}
         {deleteConfirmation && (
           <DeleteConfirmation
             patient={deleteConfirmation}
             onConfirm={() => handleDeletePatient(deleteConfirmation.id)}
+            onDeactivate={() => handleDeactivatePatient(deleteConfirmation.id)}
             onCancel={() => setDeleteConfirmation(null)}
           />
         )}

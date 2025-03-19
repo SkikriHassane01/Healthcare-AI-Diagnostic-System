@@ -135,7 +135,10 @@ const Dashboard = () => {
                 <span>Settings</span>
               </a>
               <a 
-                onClick={() => navigate('/login')}
+                onClick={() => {
+                  authService.logout();
+                  navigate('/login');
+                }}
                 className={`flex items-center p-3 rounded-lg cursor-pointer ${isDark ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-sky-800'} font-medium transition-colors`}
               >
                 <LogOut className="h-5 w-5 mr-3" />

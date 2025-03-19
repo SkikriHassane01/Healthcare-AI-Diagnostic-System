@@ -112,8 +112,8 @@ def get_patients(current_user):
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
         
-        # Base query - only get patients for the current doctor
-        query = Patient.query.filter_by(doctor_id=current_user.id)
+        # Base query - only get active patients for the current doctor
+        query = Patient.query.filter_by(doctor_id=current_user.id, is_active=True)
         
         # Add search filter if provided
         if search:
@@ -285,3 +285,39 @@ def archive_patient(current_user, patient_id):
         db.session.rollback()
         logger.error(f"Archive patient error: {str(e)}")
         return jsonify({'message': 'Patient archival failed. Please try again.'}), 500
+
+@patients_bp.route('/<patient_id>/status', methods=['PATCH'])
+@token_required
+def update_patient_status(current_user, patient_id):
+    """Update a patient's active status"""
+    logger.info(f"Update patient status request from user: {current_user.username}, patient ID: {patient_id}")
+    data = request.get_json()
+    
+    try:
+        # Get patient - ensure it belongs to the current doctor
+        patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
+        
+        if not patient:
+            logger.warning(f"Update patient status failed: patient not found - {patient_id}")
+            return jsonify({'message': 'Patient not found'}), 404
+        
+        # Check if active status is provided in the request
+        if 'active' not in data:
+            logger.warning(f"Update patient status failed: 'active' field not provided")
+            return jsonify({'message': 'Active status not provided'}), 400
+        
+        # Update the active status - map 'active' from frontend to 'is_active' in model
+        patient.is_active = data['active']
+        db.session.commit()
+        
+        logger.info(f"Patient status updated successfully: {patient.first_name} {patient.last_name}, active: {patient.is_active}")
+        
+        return jsonify({
+            'message': 'Patient status updated successfully',
+            'patient': patient.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Update patient status error: {str(e)}")
+        return jsonify({'message': 'Patient status update failed. Please try again.'}), 500
