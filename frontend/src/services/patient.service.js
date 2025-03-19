@@ -3,14 +3,19 @@ import api from './api';
 class PatientService {
   /**
    * Get a list of patients with optional search and pagination
-   * @param {Object} params - Query parameters (search, page, per_page)
+   * @param {Object} params - Query parameters (search, page, per_page, include_inactive)
    * @returns {Promise} - API response with patient list and pagination info
    */
   async getPatients(params = {}) {
     try {
       console.log('Fetching patients with params:', params);
-      // Ensure we use the URL without trailing slash
-      const response = await api.get('/api/patients', { params });
+      const queryParams = new URLSearchParams();
+      if (params.search) queryParams.append('search', params.search);
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+      if (params.include_inactive !== undefined) queryParams.append('include_inactive', params.include_inactive.toString());
+
+      const response = await api.get(`/api/patients?${queryParams.toString()}`);
       console.log('Patients API Response:', response.data);
       return response.data;
     } catch (error) {
@@ -65,18 +70,16 @@ class PatientService {
     try {
       console.log(`Updating patient ${id} with data:`, patientData);
       
-      // If it's just an activation/deactivation update
-      if (patientData && (Object.keys(patientData).length === 1 && 'active' in patientData)) {
-        // Use PATCH for partial updates
-        const response = await api.patch(`/api/patients/${id}/status`, patientData);
-        console.log('Update patient status response:', response.data);
-        return response.data;
-      } else {
-        // Use PUT for full updates
-        const response = await api.put(`/api/patients/${id}`, patientData);
-        console.log('Update patient response:', response.data);
-        return response.data;
+      // Convert active to is_active if needed for backward compatibility
+      if (patientData && 'active' in patientData && !('is_active' in patientData)) {
+        patientData.is_active = patientData.active;
+        delete patientData.active;
       }
+      
+      // Use PUT for all updates
+      const response = await api.put(`/api/patients/${id}`, patientData);
+      console.log('Update patient response:', response.data);
+      return response.data;
     } catch (error) {
       console.error(`Error updating patient ${id}:`, error);
       throw new Error(error.response?.data?.message || 'Failed to update patient');

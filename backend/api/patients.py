@@ -111,9 +111,14 @@ def get_patients(current_user):
         search = request.args.get('search', '')
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
+        include_inactive = request.args.get('include_inactive', 'false').lower() == 'true'
         
-        # Base query - only get active patients for the current doctor
-        query = Patient.query.filter_by(doctor_id=current_user.id, is_active=True)
+        # Base query - filter by doctor
+        query = Patient.query.filter_by(doctor_id=current_user.id)
+        
+        # Only include active patients unless specifically requested
+        if not include_inactive:
+            query = query.filter_by(is_active=True)
         
         # Add search filter if provided
         if search:
@@ -179,6 +184,9 @@ def update_patient(current_user, patient_id):
     logger.info(f"Update patient request from user: {current_user.username}, patient ID: {patient_id}")
     data = request.get_json()
     
+    # Log the incoming data to debug
+    logger.debug(f"Update patient data received: {data}")
+    
     try:
         # Get patient - ensure it belongs to the current doctor
         patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user.id).first()
@@ -187,6 +195,16 @@ def update_patient(current_user, patient_id):
             logger.warning(f"Update patient failed: patient not found - {patient_id}")
             return jsonify({'message': 'Patient not found'}), 404
         
+        # IMPORTANT: Explicitly handle the is_active field first
+        if 'is_active' in data:
+            logger.info(f"Updating patient active status: {data['is_active']}")
+            patient.is_active = bool(data['is_active'])  # Ensure boolean conversion
+        
+        # Handle legacy 'active' field for backward compatibility
+        elif 'active' in data:
+            logger.info(f"Updating patient active status (legacy field): {data['active']}")
+            patient.is_active = bool(data['active'])  # Ensure boolean conversion
+            
         # Update basic fields if provided
         if 'first_name' in data and data['first_name']:
             patient.first_name = data['first_name']
@@ -245,7 +263,10 @@ def update_patient(current_user, patient_id):
         # Save changes
         db.session.commit()
         
-        logger.info(f"Patient updated successfully: {patient.first_name} {patient.last_name}")
+        # Refresh the patient from the database to ensure we return the latest data
+        db.session.refresh(patient)
+        
+        logger.info(f"Patient updated successfully: {patient.first_name} {patient.last_name}, is_active: {patient.is_active}")
         
         return jsonify({
             'message': 'Patient updated successfully',

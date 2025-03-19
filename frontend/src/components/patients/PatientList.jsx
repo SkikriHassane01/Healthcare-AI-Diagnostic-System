@@ -11,7 +11,8 @@ import {
   Trash2, 
   Eye,
   ArrowLeft,
-  UserX
+  UserX,
+  Users
 } from 'lucide-react';
 
 const PatientList = () => {
@@ -29,6 +30,7 @@ const PatientList = () => {
   const [perPage] = useState(10);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [modalMode, setModalMode] = useState('delete'); // 'delete' or 'manage'
+  const [includeInactive, setIncludeInactive] = useState(false);
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -39,7 +41,8 @@ const PatientList = () => {
         const response = await patientService.getPatients({
           search: searchTerm,
           page: currentPage,
-          per_page: perPage
+          per_page: perPage,
+          include_inactive: includeInactive // Pass the include_inactive parameter to API
         });
         
         console.log('PatientList: Received patient data:', response);
@@ -67,7 +70,7 @@ const PatientList = () => {
     }, 300);
     
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, currentPage, perPage]);
+  }, [searchTerm, currentPage, perPage, includeInactive]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -98,12 +101,24 @@ const PatientList = () => {
   // Handle patient deactivation (soft delete)
   const handleDeactivatePatient = async (patientId) => {
     try {
-      await patientService.deletePatient(patientId, false); // false = deactivate only
-      // Update patient status without refetching the whole list
-      setPatients(patients.map(p => 
-        p.id === patientId ? { ...p, active: false } : p
-      ));
-      setDeleteConfirmation(null);
+      // Use updatePatient with is_active: false 
+      const response = await patientService.updatePatient(patientId, { is_active: false });
+      
+      // Check that the response has the correct is_active value
+      if (response && response.patient && response.patient.is_active === false) {
+        // Update patient status in the current list
+        setPatients(patients.map(p => 
+          p.id === patientId ? { ...p, is_active: false } : p
+        ));
+        setDeleteConfirmation(null);
+      } else {
+        // If the response doesn't confirm the status change, force a refresh
+        console.warn("Patient deactivation didn't return expected status, refreshing data...");
+        // Trigger a re-fetch by toggling includeInactive if it's false
+        if (!includeInactive) {
+          setIncludeInactive(true);
+        }
+      }
     } catch (err) {
       setError(err.message || 'Failed to deactivate patient');
     }
@@ -112,10 +127,23 @@ const PatientList = () => {
   // Handle patient reactivation
   const handleReactivatePatient = async (patientId) => {
     try {
-      await patientService.updatePatient(patientId, { active: true });
-      setPatients(patients.map(p => 
-        p.id === patientId ? { ...p, active: true } : p
-      ));
+      const response = await patientService.updatePatient(patientId, { is_active: true });
+      
+      // Check that the response has the correct is_active value
+      if (response && response.patient && response.patient.is_active === true) {
+        // Update patient status in the current list
+        setPatients(patients.map(p => 
+          p.id === patientId ? { ...p, is_active: true } : p
+        ));
+      } else {
+        // If the response doesn't confirm the status change, force a refresh
+        console.warn("Patient reactivation didn't return expected status, refreshing data...");
+        // Force a re-fetch
+        const timeoutId = setTimeout(() => {
+          // This will trigger the useEffect to re-fetch data
+          setCurrentPage(currentPage);
+        }, 300);
+      }
     } catch (err) {
       setError(err.message || 'Failed to reactivate patient');
     }
@@ -198,6 +226,25 @@ const PatientList = () => {
                 } border focus:outline-none focus:ring-2 focus:ring-sky-500`}
               />
             </div>
+            
+            {/* Add inactive patients toggle */}
+            <div className="flex items-center">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeInactive}
+                  onChange={() => setIncludeInactive(!includeInactive)}
+                  className="sr-only"
+                />
+                <div className={`relative w-10 h-5 rounded-full transition-colors ${includeInactive ? 'bg-sky-600' : isDark ? 'bg-slate-600' : 'bg-slate-300'}`}>
+                  <div className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-200 transform ${includeInactive ? 'translate-x-5' : ''}`}></div>
+                </div>
+                <span className={`ml-2 text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <Users className="inline-block h-4 w-4 mr-1" strokeWidth={2} />
+                  Show inactive patients
+                </span>
+              </label>
+            </div>
           </div>
         </div>
         
@@ -255,7 +302,7 @@ const PatientList = () => {
                   {patients.map((patient) => (
                     <tr 
                       key={patient.id} 
-                      className={`${patient.active === false ? (isDark ? 'bg-slate-700/30' : 'bg-slate-100') : ''} ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
+                      className={`${(!patient.is_active) ? (isDark ? 'bg-slate-700/30' : 'bg-slate-100') : ''} ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
                       onClick={() => navigate(`/patients/${patient.id}`)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -266,7 +313,7 @@ const PatientList = () => {
                             </span>
                           </div>
                           <div className="ml-4">
-                            <div className={`font-medium ${patient.active === false ? (isDark ? 'text-slate-400' : 'text-slate-500') : ''}`}>
+                            <div className={`font-medium ${(!patient.is_active) ? (isDark ? 'text-slate-400' : 'text-slate-500') : ''}`}>
                               {patient.full_name}
                             </div>
                             <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'} md:hidden`}>
@@ -297,12 +344,12 @@ const PatientList = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span 
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                            patient.active === false 
+                            (!patient.is_active)
                               ? (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600') 
                               : (isDark ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-800')
                           }`}
                         >
-                          {patient.active === false ? 'Inactive' : 'Active'}
+                          {(!patient.is_active) ? 'Inactive' : 'Active'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -328,7 +375,7 @@ const PatientList = () => {
                         >
                           <Edit className={`h-4 w-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
                         </button>
-                        {patient.active === false ? (
+                        {!patient.is_active ? (
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
@@ -415,7 +462,7 @@ const PatientList = () => {
         {deleteConfirmation && (
           <DeleteConfirmation
             patient={deleteConfirmation}
-            onConfirm={() => handleDeletePatient(deleteConfirmation.id)}
+            onConfirm={() => handlePermanentDelete(deleteConfirmation.id)} 
             onDeactivate={() => handleDeactivatePatient(deleteConfirmation.id)}
             onCancel={() => setDeleteConfirmation(null)}
           />
