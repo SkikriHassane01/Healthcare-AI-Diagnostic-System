@@ -314,10 +314,11 @@ const LandingPage = () => {
           {/* Tabs */}
           <div className="mb-10 flex justify-center">
             <div className={`inline-flex ${isDark ? 'bg-slate-900' : 'bg-slate-100'} rounded-lg p-1 shadow-lg`}>
+              {/* Diabetes */}
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'diabetes' 
-                    ? 'bg-sky-600 text-white shadow-md' 
+                  activeTab === 'diabetes'
+                    ? 'bg-sky-600 text-white shadow-md'
                     : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
                 }`}
                 onClick={() => handleTabChange('diabetes')}
@@ -325,10 +326,12 @@ const LandingPage = () => {
               >
                 Diabetes
               </button>
+
+              {/* Brain Tumor */}
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'brainTumor' 
-                    ? 'bg-sky-600 text-white shadow-md' 
+                  activeTab === 'brainTumor'
+                    ? 'bg-sky-600 text-white shadow-md'
                     : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
                 }`}
                 onClick={() => handleTabChange('brainTumor')}
@@ -336,10 +339,25 @@ const LandingPage = () => {
               >
                 Brain Tumor
               </button>
+
+              {/* Alzheimer */}
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeTab === 'future' 
-                    ? 'bg-sky-600 text-white shadow-md' 
+                  activeTab === 'alzheimer'
+                    ? 'bg-sky-600 text-white shadow-md'
+                    : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
+                }`}
+                onClick={() => handleTabChange('alzheimer')}
+                aria-selected={activeTab === 'alzheimer'}
+              >
+                Alzheimer
+              </button>
+
+              {/* Future Models */}
+              <button
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  activeTab === 'future'
+                    ? 'bg-sky-600 text-white shadow-md'
                     : `${isDark ? 'text-slate-300 hover:text-sky-400' : 'text-slate-600 hover:text-sky-600'}`
                 }`}
                 onClick={() => handleTabChange('future')}
@@ -349,7 +367,7 @@ const LandingPage = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Tab content */}
           <div 
             id="tab-content"
@@ -498,74 +516,233 @@ const LandingPage = () => {
                 </div>
               </div>
             )}
+            {/* Alzheimer Content */}
+            {activeTab === 'alzheimer' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-fade-in">
+                <div>
+                  <div className="inline-block px-3 py-1 rounded-full bg-sky-600 text-white text-sm font-semibold mb-4">
+                    MODEL METRICS
+                  </div>
+                  <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'} mb-4`}>
+                    Alzheimer's Detection Model
+                  </h3>
+                  <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mb-6`}>
+                    Leveraging PET scans and cognitive assessment data, our model aids clinicians in early-stage detection and progression monitoring of Alzheimer's disease.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start transition-transform hover:translate-x-2 duration-200">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-sky-600 flex items-center justify-center mt-0.5">
+                        <svg className="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                          Multi‑Modal Data Integration
+                        </h4>
+                        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          Combines imaging biomarkers with clinical cognitive scores for higher diagnostic confidence.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start transition-transform hover:translate-x-2 duration-200">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-sky-600 flex items-center justify-center mt-0.5">
+                        <svg className="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                          Progression Tracking
+                        </h4>
+                        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          Predicts disease progression stages, assisting in personalized treatment planning.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start transition-transform hover:translate-x-2 duration-200">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-sky-600 flex items-center justify-center mt-0.5">
+                        <svg className="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                          Explainable Heatmaps
+                        </h4>
+                        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          Highlights brain regions contributing most to the prediction for transparent decision‑making.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} p-6 rounded-lg shadow-lg border animate-fade-in animation-delay-300 transform transition-all duration-300 hover:shadow-2xl`}
+                >
+                  <img
+                    src="src/assets/images/alzheimer.jpg"
+                    alt="Alzheimer's Detection Model"
+                    className="rounded-lg shadow-lg w-full"
+                  />
+                  <div className="mt-6 grid grid-cols-2 gap-4">
+                    <div
+                      className={`${isDark ? 'bg-slate-900' : 'bg-white'} p-4 rounded-lg shadow transition-transform hover:scale-105 duration-200`}
+                    >
+                      <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'} mb-1`}>Accuracy</p>
+                      <div className="w-full bg-slate-700 dark:bg-slate-700 rounded-full h-2.5">
+                        <div
+                          className="bg-sky-600 h-2.5 rounded-full animate-[grow_2s_ease-out]"
+                          style={{ width: '95%' }}
+                        ></div>
+                      </div>
+                      <p className={`text-right text-sm font-medium ${isDark ? 'text-sky-400' : 'text-sky-600'} mt-1`}>95%</p>
+                    </div>
+                    <div
+                      className={`${isDark ? 'bg-slate-900' : 'bg-white'} p-4 rounded-lg shadow transition-transform hover:scale-105 duration-200`}
+                    >
+                      <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'} mb-1`}>Recall</p>
+                      <div className="w-full bg-slate-700 dark:bg-slate-700 rounded-full h-2.5">
+                        <div
+                          className="bg-sky-600 h-2.5 rounded-full animate-[grow_2.3s_ease-out]"
+                          style={{ width: '92%' }}
+                        ></div>
+                      </div>
+                      <p className={`text-right text-sm font-medium ${isDark ? 'text-sky-400' : 'text-sky-600'} mt-1`}>92%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             
-            {activeTab === 'future' && (
+           {/* Future Models Content (Alzheimer card removed) */}
+           {activeTab === 'future' && (
               <div className="animate-fade-in">
-                <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'} mb-6 text-center`}>Coming Soon: Expanding Our Diagnostic Capabilities</h3>
-                <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mb-8 text-center max-w-3xl mx-auto`}>
+                <h3
+                  className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'} mb-6 text-center`}
+                >
+                  Coming Soon: Expanding Our Diagnostic Capabilities
+                </h3>
+                <p
+                  className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mb-8 text-center max-w-3xl mx-auto`}
+                >
                   Our team is actively developing new AI models to expand our diagnostic capabilities across more medical conditions.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Covid‑19 */}
+                  <div
+                    className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}
+                  >
                     <div className="w-12 h-12 bg-sky-600 text-white rounded-lg flex items-center justify-center mb-4 shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                        />
                       </svg>
                     </div>
-                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>Alzheimer's Detection</h4>
-                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Early-stage detection and progression monitoring through advanced imaging analysis.</p>
+                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>
+                      Covid‑19 Analysis
+                    </h4>
+                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Chest X‑ray and CT scan evaluation for COVID‑19 detection and severity assessment.
+                    </p>
                     <div className="mt-4 flex items-center">
-                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>In Development</div>
+                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>
+                        In Development
+                      </div>
                       <div className="ml-2 bg-slate-700 h-1.5 w-24 rounded-full overflow-hidden">
-                        <div className="bg-sky-600 h-full rounded-full" style={{ width: '75%' }}></div>
+                        <div
+                          className="bg-sky-600 h-full rounded-full"
+                          style={{ width: '60%' }}
+                        ></div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}>
+
+                  {/* Pneumonia */}
+                  <div
+                    className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}
+                  >
                     <div className="w-12 h-12 bg-sky-600 text-white rounded-lg flex items-center justify-center mb-4 shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
                       </svg>
                     </div>
-                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>Covid-19 Analysis</h4>
-                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Chest X-ray and CT scan evaluation for COVID-19 detection and severity assessment.</p>
+                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>
+                      Pneumonia Detection
+                    </h4>
+                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Lung inflammation analysis with pathogen type classification and severity scoring.
+                    </p>
                     <div className="mt-4 flex items-center">
-                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>In Development</div>
+                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>
+                        In Development
+                      </div>
                       <div className="ml-2 bg-slate-700 h-1.5 w-24 rounded-full overflow-hidden">
-                        <div className="bg-sky-600 h-full rounded-full" style={{ width: '60%' }}></div>
+                        <div
+                          className="bg-sky-600 h-full rounded-full"
+                          style={{ width: '85%' }}
+                        ></div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}>
+
+                  {/* Breast Cancer */}
+                  <div
+                    className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}
+                  >
                     <div className="w-12 h-12 bg-sky-600 text-white rounded-lg flex items-center justify-center mb-4 shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                        />
                       </svg>
                     </div>
-                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>Pneumonia Detection</h4>
-                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Lung inflammation analysis with pathogen type classification and severity scoring.</p>
+                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>
+                      Breast Cancer Screening
+                    </h4>
+                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Mammogram analysis with early‑stage cancer detection and classification.
+                    </p>
                     <div className="mt-4 flex items-center">
-                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>In Development</div>
-                      <div className="ml-2 bg-slate-700 h-1.5 w-24 rounded-full overflow-hidden">
-                        <div className="bg-sky-600 h-full rounded-full" style={{ width: '85%' }}></div>
+                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>
+                        In Development
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} p-6 rounded-lg shadow-lg border transition-transform hover:-translate-y-2 duration-300`}>
-                    <div className="w-12 h-12 bg-sky-600 text-white rounded-lg flex items-center justify-center mb-4 shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                      </svg>
-                    </div>
-                    <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-800'} mb-2`}>Breast Cancer Screening</h4>
-                    <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Mammogram analysis with early-stage cancer detection and classification.</p>
-                    <div className="mt-4 flex items-center">
-                      <div className={`text-xs ${isDark ? 'text-sky-400' : 'text-sky-600'} font-medium`}>In Development</div>
                       <div className="ml-2 bg-slate-700 h-1.5 w-24 rounded-full overflow-hidden">
-                        <div className="bg-sky-600 h-full rounded-full" style={{ width: '45%' }}></div>
+                        <div
+                          className="bg-sky-600 h-full rounded-full"
+                          style={{ width: '45%' }}
+                        ></div>
                       </div>
                     </div>
                   </div>

@@ -19,6 +19,7 @@ import PatientForm from './components/patients/PatientForm';
 // Import diagnostic components
 import DiabetesForm from './components/diagnostics/diabetes/DiabetesForm';
 import DiabetesHistory from './components/diagnostics/diabetes/DiabetesHistory';
+import AlzheimerForm from './components/diagnostics/alzheimer/AlzheimerForm';
 
 // Placeholder pages (will be replaced in later phases)
 const ProfilePage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">User Profile (Coming Soon)</div>;
@@ -64,6 +65,7 @@ function App() {
             <Route path="/patients/:patientId/diabetes-assessment" element={<DiabetesForm />} />
             <Route path="/patients/:patientId/diabetes-history" element={<DiabetesHistory />} />
             <Route path="/diagnostics/brain-tumor" element={<BrainTumorPage />} />
+            <Route path="/diagnostics/alzheimer" element={<AlzheimerForm />} />
           </Route>
           
           {/* Admin-only routes */}

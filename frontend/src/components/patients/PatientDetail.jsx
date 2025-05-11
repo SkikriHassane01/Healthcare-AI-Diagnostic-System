@@ -361,6 +361,49 @@ const PatientDetail = () => {
               </div>
             </div>
             
+            {/* Alzheimer's Assessment Card */}
+            <div className={`${isDark ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-200'} rounded-lg border p-4 transition-transform hover:-translate-y-1 duration-200`}>
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center mr-3">
+                    <svg className="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className={`text-md font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>Alzheimer's Assessment</h3>
+                </div>
+              </div>
+              
+              <p className={`mb-4 text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                Analyze MRI scans to detect signs of Alzheimer's disease and cognitive impairment.
+              </p>
+              
+              <div className="flex space-x-2">
+                <Link
+                  to={`/diagnostics/alzheimer`}
+                  className="flex-1 flex items-center justify-center px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded-md shadow-sm transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  New Assessment
+                </Link>
+                <Link
+                  to={`/patients/${id}/alzheimer-history`}
+                  className={`flex items-center justify-center px-3 py-2 rounded-md shadow-sm transition-colors text-sm ${
+                    isDark 
+                      ? 'bg-slate-600 hover:bg-slate-500 text-white' 
+                      : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                  }`}
+                >
+                  <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  History
+                </Link>
+              </div>
+            </div>
+            
             {/* Brain Tumor Detection Card */}
             <div className={`${isDark ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-200'} rounded-lg border p-4 transition-transform hover:-translate-y-1 duration-200`}>
               <div className="flex justify-between items-start mb-3">

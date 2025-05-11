@@ -12,7 +12,7 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.10",
     "axios": "^1.8.3",
-    "lucide-react": "^0.482.0",
+    "lucide-react": "^0.509.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.3.0"

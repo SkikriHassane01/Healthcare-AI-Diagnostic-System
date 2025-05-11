@@ -1,0 +1,342 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Home, 
+  AlertCircle, 
+  CheckCircle2, 
+  Info, 
+  FileBarChart2, 
+  ArrowRight, 
+  BarChart3 
+} from 'lucide-react';
+
+const BreastCancerView = ({ isDark }) => {
+  const [formData, setFormData] = useState({
+    radius_mean: '',
+    texture_mean: '',
+    perimeter_mean: '',
+    area_mean: '',
+    smoothness_mean: '',
+    compactness_mean: '',
+    concavity_mean: '',
+    concave_points_mean: '',
+    symmetry_mean: '',
+    fractal_dimension_mean: ''
+  });
+  
+  const [formErrors, setFormErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+    
+    // Clear error for this field when user types
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: null
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+
+    // Check if all fields have values and are numbers
+    Object.entries(formData).forEach(([key, value]) => {
+      if (!value.trim()) {
+        errors[key] = 'Required';
+        isValid = false;
+      } else if (isNaN(parseFloat(value))) {
+        errors[key] = 'Must be a number';
+        isValid = false;
+      }
+    });
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      // Mock result
+      setResult({
+        prediction: 'malignant',
+        probability: 0.87,
+        featureImportance: [
+          { feature: 'concave_points_mean', importance: 0.28 },
+          { feature: 'radius_mean', importance: 0.21 },
+          { feature: 'perimeter_mean', importance: 0.18 },
+          { feature: 'area_mean', importance: 0.15 },
+          { feature: 'concavity_mean', importance: 0.08 },
+          { feature: 'texture_mean', importance: 0.05 },
+          { feature: 'compactness_mean', importance: 0.03 },
+          { feature: 'symmetry_mean', importance: 0.01 },
+          { feature: 'smoothness_mean', importance: 0.01 },
+          { feature: 'fractal_dimension_mean', importance: 0.00 }
+        ]
+      });
+      setIsLoading(false);
+    }, 2000);
+  };
+
+  const resetAnalysis = () => {
+    setFormData({
+      radius_mean: '',
+      texture_mean: '',
+      perimeter_mean: '',
+      area_mean: '',
+      smoothness_mean: '',
+      compactness_mean: '',
+      concavity_mean: '',
+      concave_points_mean: '',
+      symmetry_mean: '',
+      fractal_dimension_mean: ''
+    });
+    setFormErrors({});
+    setResult(null);
+  };
+
+  const loadSampleData = () => {
+    setFormData({
+      radius_mean: '17.99',
+      texture_mean: '10.38',
+      perimeter_mean: '122.8',
+      area_mean: '1001',
+      smoothness_mean: '0.1184',
+      compactness_mean: '0.2776',
+      concavity_mean: '0.3001',
+      concave_points_mean: '0.1471',
+      symmetry_mean: '0.2419',
+      fractal_dimension_mean: '0.07871'
+    });
+    setFormErrors({});
+  };
+
+  // Helper function to display feature names in a more readable format
+  const formatFeatureName = (name) => {
+    return name
+      .replace('_mean', '')
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">Breast Cancer Detection</h2>
+        <Link to="/dashboard" className={`px-3 py-1 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'} transition-colors text-sm flex items-center`}>
+          <Home className="w-4 h-4 mr-1" />Back to Dashboard
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Info Panel */}
+        <div className={`${isDark?'bg-slate-800 border-slate-700':'bg-white border-slate-200'} rounded-lg shadow-sm border p-4`}>
+          <h3 className="font-semibold mb-4 flex items-center">
+            <FileBarChart2 className="mr-2 h-5 w-5 text-pink-500"/>About This Tool
+          </h3>
+          <p className={`${isDark?'text-slate-300':'text-slate-600'} mb-4`}>
+            This AI model analyzes Fine Needle Aspiration (FNA) test data to determine if a breast mass is benign or malignant with high accuracy.
+          </p>
+          
+          <div className={`mb-6 p-4 rounded-lg ${isDark?'bg-slate-700':'bg-slate-50'}`}>
+            <h4 className="font-medium mb-2">About the biomarkers:</h4>
+            <ul className={`${isDark?'text-slate-300':'text-slate-600'} list-disc list-inside space-y-1`}>
+              <li><span className="font-medium">Radius</span>: Mean distance from center to points on the perimeter</li>
+              <li><span className="font-medium">Texture</span>: Standard deviation of gray-scale values</li>
+              <li><span className="font-medium">Perimeter</span>: Perimeter of the cell nucleus</li>
+              <li><span className="font-medium">Area</span>: Area of the cell nucleus</li>
+              <li><span className="font-medium">Smoothness</span>: Local variation in radius lengths</li>
+              <li><span className="font-medium">Compactness</span>: Perimeter² / area - 1.0</li>
+              <li><span className="font-medium">Concavity</span>: Severity of concave portions of the contour</li>
+              <li><span className="font-medium">Concave points</span>: Number of concave portions of the contour</li>
+              <li><span className="font-medium">Symmetry</span>: Symmetry of the cell nucleus</li>
+              <li><span className="font-medium">Fractal dimension</span>: "Coastline approximation" - 1</li>
+            </ul>
+          </div>
+          
+          <div className={`p-3 border ${isDark?'border-amber-700 bg-amber-900/20':'border-amber-200 bg-amber-50'} rounded-md`}>
+            <p className={`${isDark?'text-amber-300':'text-amber-800'} text-sm flex items-start`}>
+              <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0"/>
+              This tool is for assistance only. Always confirm results with laboratory testing and clinical assessment.
+            </p>
+          </div>
+        </div>
+
+        {/* Input & Results */}
+        <div className={`lg:col-span-2 ${isDark?'bg-slate-800 border-slate-700':'bg-white border-slate-200'} rounded-lg shadow-sm border p-4`}>
+          <h3 className="font-semibold mb-4">FNA Test Data Analysis</h3>
+
+          {!result && !isLoading && (
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={loadSampleData}
+                  className={`text-sm px-3 py-1 ${
+                    isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  } rounded flex items-center`}
+                >
+                  <Info className="h-3 w-3 mr-1" />
+                  Load Sample Data
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {Object.keys(formData).map((field) => (
+                  <div key={field}>
+                    <label
+                      htmlFor={field}
+                      className={`block text-sm font-medium mb-1 ${
+                        isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}
+                    >
+                      {formatFeatureName(field)}
+                    </label>
+                    <input
+                      type="text"
+                      id={field}
+                      name={field}
+                      value={formData[field]}
+                      onChange={handleInputChange}
+                      className={`w-full p-2 rounded-md border ${
+                        formErrors[field]
+                          ? 'border-red-500'
+                          : isDark
+                          ? 'bg-slate-700 border-slate-600 text-white'
+                          : 'bg-white border-slate-300'
+                      }`}
+                      placeholder={`Enter ${formatFeatureName(field).toLowerCase()}`}
+                    />
+                    {formErrors[field] && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors[field]}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-md transition-colors flex items-center"
+                >
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Analyze Data
+                </button>
+              </div>
+            </form>
+          )}
+
+          {isLoading && (
+            <div className="text-center py-8">
+              <div className="inline-block w-12 h-12 border-4 border-t-transparent border-pink-500 rounded-full animate-spin"></div>
+              <p className={`${isDark?'text-slate-300':'text-slate-600'} mt-4`}>Analyzing data...</p>
+            </div>
+          )}
+
+          {result && (
+            <div>
+              {/* Results Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-medium">Analysis Results</h4>
+                <button onClick={resetAnalysis} className={`${isDark?'text-slate-400 hover:text-slate-300':'text-slate-500 hover:text-slate-700'} text-sm`}>New Analysis</button>
+              </div>
+
+              {/* Summary */}
+              <div className={`p-4 ${result.prediction==='malignant'?isDark?'bg-rose-900/20 border-rose-800':'bg-rose-50 border-rose-200':isDark?'bg-emerald-900/20 border-emerald-800':'bg-emerald-50 border-emerald-200'} border rounded-lg mb-6`}>
+                <div className="flex items-center">
+                  {result.prediction==='malignant'
+                    ? <AlertCircle className={`h-5 w-5 mr-2 ${isDark?'text-rose-400':'text-rose-500'}`}/>
+                    : <CheckCircle2 className={`h-5 w-5 mr-2 ${isDark?'text-emerald-400':'text-emerald-500'}`}/>
+                  }
+                  <h4 className="font-medium">{result.prediction==='malignant'?'Malignant (Cancerous)':'Benign (Non-Cancerous)'}</h4>
+                </div>
+                <div className="mt-2">
+                  <div className="flex justify-between items-center">
+                    <span className={`${isDark?'text-slate-300':'text-slate-600'} text-sm`}>Confidence:</span>
+                    <span className="font-semibold">{Math.round(result.probability*100)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
+                    <div className={`${result.prediction==='malignant'?'bg-rose-500':'bg-emerald-500'} h-2 rounded-full`} style={{width:`${result.probability*100}%`}}/>
+                  </div>
+                </div>
+              </div>
+
+              {/* Feature Importance */}
+              <div className={`p-4 ${isDark?'bg-slate-700':'bg-slate-50'} rounded-lg mb-6`}>
+                <h4 className="font-medium mb-3 flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Feature Importance
+                </h4>
+                <div className="space-y-3">
+                  {result.featureImportance.map((feature) => (
+                    <div key={feature.feature}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          {formatFeatureName(feature.feature)}
+                        </span>
+                        <span className="text-sm font-medium">
+                          {Math.round(feature.importance * 100)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div 
+                          className={`${isDark ? 'bg-pink-500' : 'bg-pink-600'} h-2 rounded-full`}
+                          style={{ width: `${feature.importance * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className={`text-xs mt-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Bars show how each feature contributed to the final prediction.
+                </p>
+              </div>
+
+              {/* Patient Data Summary */}
+              <div className={`p-4 ${isDark?'bg-slate-700':'bg-slate-50'} rounded-lg mb-6`}>
+                <h4 className="font-medium mb-3">Analyzed Data Values</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(formData).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {formatFeatureName(key)}:
+                      </span>
+                      <span className="text-sm font-medium">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button className="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-md transition-colors flex-1 flex items-center justify-center">
+                  Save to Patient Records
+                </button>
+                <button className="px-4 py-2 border border-pink-600 text-pink-600 hover:bg-pink-50 rounded-md transition-colors flex-1 flex items-center justify-center">
+                  Export Results
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default BreastCancerView;

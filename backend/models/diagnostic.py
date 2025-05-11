@@ -142,3 +142,59 @@ class BrainTumorPrediction(db.Model):
             'doctor_assessment': self.doctor_assessment,
             'doctor_notes': self.doctor_notes
         }
+
+class AlzheimerPrediction(db.Model):
+    """Model for storing Alzheimer's detection prediction results"""
+    
+    __tablename__ = 'alzheimer_predictions'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    patient_id = db.Column(db.String(36), db.ForeignKey('patients.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Image information
+    image_path = db.Column(db.String(255), nullable=False)
+    
+    # Prediction results - store class probabilities
+    prediction_class = db.Column(db.String(10), nullable=False)  # CN, EMCI, LMCI, AD
+    cn_probability = db.Column(db.Float, nullable=False)
+    emci_probability = db.Column(db.Float, nullable=False)
+    lmci_probability = db.Column(db.Float, nullable=False)
+    ad_probability = db.Column(db.Float, nullable=False)
+    confidence = db.Column(db.Float, nullable=False)  # Highest probability value
+    
+    # Doctor's assessment and notes
+    doctor_assessment = db.Column(db.String(10), nullable=True)  # Doctor's final assessment class
+    doctor_notes = db.Column(db.Text, nullable=True)  # Doctor's notes
+    
+    # Relationship with patient
+    patient = db.relationship("Patient", backref=db.backref("alzheimer_predictions", lazy=True))
+    
+    def to_dict(self):
+        """Convert the prediction to a dictionary for API responses"""
+        class_descriptions = {
+            "CN": "Cognitive Normal (Non Demented)",
+            "EMCI": "Early Mild Cognitive Impairment (Very Mild Dementia)",
+            "LMCI": "Late Mild Cognitive Impairment (Mild Dementia)",
+            "AD": "Alzheimer's Disease (Moderate Dementia)"
+        }
+        
+        return {
+            'id': self.id,
+            'patient_id': self.patient_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'image_path': self.image_path,
+            'prediction': {
+                'class': self.prediction_class,
+                'description': class_descriptions.get(self.prediction_class, "Unknown"),
+                'probabilities': {
+                    'CN': self.cn_probability,
+                    'EMCI': self.emci_probability,
+                    'LMCI': self.lmci_probability,
+                    'AD': self.ad_probability
+                },
+                'confidence': self.confidence
+            },
+            'doctor_assessment': self.doctor_assessment,
+            'doctor_notes': self.doctor_notes
+        }
