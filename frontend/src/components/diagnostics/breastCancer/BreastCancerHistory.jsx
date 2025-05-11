@@ -43,54 +43,9 @@ const BreastCancerHistory = () => {
         setPatient(patientResponse.patient);
         
         // Fetch prediction history
-        // In a real application, this would be:
-        // const historyResponse = await diagnosticsService.getBreastCancerHistory(patientId);
+        const historyResponse = await diagnosticsService.getBreastCancerHistory(patientId);
+        setHistory(historyResponse.history || []);
         
-        // For now, mock the history data
-        const mockHistory = [
-          {
-            id: '1',
-            prediction_result: true,
-            prediction_probability: 0.87,
-            created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            doctor_assessment: true,
-            doctor_notes: 'Confirmed via additional testing. Patient scheduled for follow-up with oncology.',
-            input_data: {
-              radius_mean: '17.99',
-              texture_mean: '10.38',
-              perimeter_mean: '122.8',
-              area_mean: '1001',
-              smoothness_mean: '0.1184',
-              compactness_mean: '0.2776',
-              concavity_mean: '0.3001',
-              concave_points_mean: '0.1471',
-              symmetry_mean: '0.2419',
-              fractal_dimension_mean: '0.07871'
-            }
-          },
-          {
-            id: '2',
-            prediction_result: false,
-            prediction_probability: 0.22,
-            created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-            doctor_assessment: false,
-            doctor_notes: 'No malignancy detected. Recommend routine follow-up in 6 months.',
-            input_data: {
-              radius_mean: '13.21',
-              texture_mean: '15.09',
-              perimeter_mean: '84.6',
-              area_mean: '537',
-              smoothness_mean: '0.0847',
-              compactness_mean: '0.0552',
-              concavity_mean: '0.0341',
-              concave_points_mean: '0.0189',
-              symmetry_mean: '0.1509',
-              fractal_dimension_mean: '0.0588'
-            }
-          }
-        ];
-        
-        setHistory(mockHistory);
         setError('');
       } catch (err) {
         setError(err.message || 'Failed to load patient data or prediction history.');

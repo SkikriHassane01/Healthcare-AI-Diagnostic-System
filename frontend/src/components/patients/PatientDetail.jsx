@@ -423,15 +423,28 @@ const PatientDetail = () => {
               </p>
               
               <div className="flex space-x-2">
-                <button 
-                  className="flex-1 flex items-center justify-center px-3 py-2 text-sm rounded-md shadow-sm transition-colors bg-slate-400 text-slate-50 cursor-not-allowed"
-                  disabled
+                <Link
+                  to={`/patients/${id}/breast-cancer-assessment`}
+                  className="flex-1 flex items-center justify-center px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded-md shadow-sm transition-colors"
                 >
                   <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  Coming Soon
-                </button>
+                  New Assessment
+                </Link>
+                <Link
+                  to={`/patients/${id}/breast-cancer-history`}
+                  className={`flex items-center justify-center px-3 py-2 rounded-md shadow-sm transition-colors text-sm ${
+                    isDark 
+                      ? 'bg-slate-600 hover:bg-slate-500 text-white' 
+                      : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                  }`}
+                >
+                  <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  History
+                </Link>
               </div>
             </div>
           </div>

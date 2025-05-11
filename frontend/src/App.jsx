@@ -20,6 +20,8 @@ import PatientForm from './components/patients/PatientForm';
 import DiabetesForm from './components/diagnostics/diabetes/DiabetesForm';
 import DiabetesHistory from './components/diagnostics/diabetes/DiabetesHistory';
 import AlzheimerForm from './components/diagnostics/alzheimer/AlzheimerForm';
+import BreastCancerForm from './components/diagnostics/breastCancer/BreastCancerForm';
+import BreastCancerHistory from './components/diagnostics/breastCancer/BreastCancerHistory';
 
 // Placeholder pages (will be replaced in later phases)
 const ProfilePage = () => <div className="p-8 min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-white transition-colors duration-300">User Profile (Coming Soon)</div>;
@@ -64,6 +66,11 @@ function App() {
             {/* Diagnostic Routes */}
             <Route path="/patients/:patientId/diabetes-assessment" element={<DiabetesForm />} />
             <Route path="/patients/:patientId/diabetes-history" element={<DiabetesHistory />} />
+            
+            {/* Add Breast Cancer Routes */}
+            <Route path="/patients/:patientId/breast-cancer-assessment" element={<BreastCancerForm />} /> 
+            <Route path="/patients/:patientId/breast-cancer-history" element={<BreastCancerHistory />} />
+            
             <Route path="/diagnostics/brain-tumor" element={<BrainTumorPage />} />
             <Route path="/diagnostics/alzheimer" element={<AlzheimerForm />} />
           </Route>

@@ -198,3 +198,62 @@ class AlzheimerPrediction(db.Model):
             'doctor_assessment': self.doctor_assessment,
             'doctor_notes': self.doctor_notes
         }
+
+class BreastCancerPrediction(db.Model):
+    """Model for storing breast cancer prediction results from FNA test data"""
+    
+    __tablename__ = 'breast_cancer_predictions'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    patient_id = db.Column(db.String(36), db.ForeignKey('patients.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Store input data (FNA test data) as JSON
+    _input_data = db.Column('input_data', db.Text, nullable=False)
+    
+    # Store prediction results
+    prediction_result = db.Column(db.String(10), nullable=False)  # 'benign' or 'malignant'
+    prediction_probability = db.Column(db.Float, nullable=False)  # Probability of malignancy (0-1)
+    
+    # Doctor's assessment and notes
+    doctor_assessment = db.Column(db.String(10), nullable=True)  # Doctor's final assessment
+    doctor_notes = db.Column(db.Text, nullable=True)  # Doctor's notes
+    
+    # Relationship with patient
+    patient = db.relationship("Patient", backref=db.backref("breast_cancer_predictions", lazy=True))
+    
+    @property
+    def input_data(self):
+        """Get the input data as a dictionary"""
+        if self._input_data:
+            return json.loads(self._input_data)
+        return {}
+    
+    @input_data.setter
+    def input_data(self, value):
+        """Set the input data from a dictionary"""
+        self._input_data = json.dumps(value)
+    
+    def __init__(self, patient_id, input_data, prediction_result, prediction_probability, doctor_assessment=None, doctor_notes=None):
+        """Initialize a new breast cancer prediction record"""
+        self.patient_id = patient_id
+        self.input_data = input_data
+        self.prediction_result = prediction_result  # 'benign' or 'malignant'
+        self.prediction_probability = float(prediction_probability)
+        self.doctor_assessment = doctor_assessment
+        self.doctor_notes = doctor_notes
+        
+        logger.info(f"Created new breast cancer prediction for patient: {patient_id}")
+    
+    def to_dict(self):
+        """Convert the prediction to a dictionary for API responses"""
+        return {
+            'id': self.id,
+            'patient_id': self.patient_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'input_data': self.input_data,
+            'prediction_result': self.prediction_result,
+            'prediction_probability': self.prediction_probability,
+            'doctor_assessment': self.doctor_assessment,
+            'doctor_notes': self.doctor_notes
+        }

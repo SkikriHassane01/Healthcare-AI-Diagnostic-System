@@ -108,6 +108,91 @@ class DiagnosticsService {
       throw new Error(error.response?.data?.message || 'Failed to update diabetes prediction');
     }
   }
+  /** ______________________Breast Cancer______________________*/
+  /**
+   * Make a breast cancer prediction for a patient
+   * @param {string} patientId - ID of the patient
+   * @param {Object} data - Prediction data
+   * @returns {Promise} API response with prediction result
+   */
+  async predictBreastCancer(patientId, data) {
+    try {
+      console.log(`Making breast cancer prediction for patient ${patientId}:`, data);
+      
+      // Format data if needed
+      const formattedData = {};
+      for (const key in data) {
+        formattedData[key] = isNaN(parseFloat(data[key])) ? data[key] : parseFloat(data[key]);
+      }
+      
+      const response = await api.post(`/api/diagnostics/breast-cancer/predict/${patientId}`, formattedData);
+      console.log('Breast cancer prediction response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error('Error making breast cancer prediction:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        throw new Error(error.response.data?.message || 'Failed to make breast cancer prediction');
+      } else if (error.request) {
+        console.error('No response received from server:', error.request);
+        throw new Error('No response received from server');
+      } else {
+        console.error('Error making breast cancer prediction:', error.message);
+        throw new Error('Error sending request: ' + error.message);
+      }
+    }
+  }
+
+  /**
+   * Get breast cancer prediction history for a patient
+   * @param {string} patientId - ID of the patient
+   * @returns {Promise} API response with prediction history
+   */
+  async getBreastCancerHistory(patientId) {
+    try {
+      const response = await api.get(`/api/diagnostics/breast-cancer/history/${patientId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting breast cancer history:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to get breast cancer prediction history');
+    }
+  }
+
+  /**
+   * Get a specific breast cancer prediction
+   * @param {string} predictionId - ID of the prediction
+   * @returns {Promise} API response with prediction details
+   */
+  async getBreastCancerPrediction(predictionId) {
+    try {
+      const response = await api.get(`/api/diagnostics/breast-cancer/prediction/${predictionId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting breast cancer prediction:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to get breast cancer prediction');
+    }
+  }
+
+  /**
+   * Update a breast cancer prediction with doctor's assessment
+   * @param {string} predictionId - ID of the prediction
+   * @param {Object} data - Update data including doctor's assessment
+   * @returns {Promise} API response with updated prediction
+   */
+  async updateBreastCancerPrediction(predictionId, data) {
+    try {
+      console.log(`Updating breast cancer prediction ${predictionId}:`, data);
+      const response = await api.put(`/api/diagnostics/breast-cancer/prediction/${predictionId}`, data);
+      console.log('Update breast cancer prediction response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating breast cancer prediction:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to update breast cancer prediction');
+    }
+  }
 }
 
 // Create singleton instance
