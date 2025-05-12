@@ -286,53 +286,7 @@ const DiabetesView = ({ isDark }) => {
             </div>
           )}
           
-          {/* Quick Actions */}
-          <div className="mt-6">
-            <h3 className="font-semibold mb-3">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Link
-                to="/patients/new"
-                className={`py-3 px-4 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'} rounded-lg transition-colors flex items-center`}
-              >
-                <div className={`h-8 w-8 rounded-full ${isDark ? 'bg-slate-600' : 'bg-white'} flex items-center justify-center mr-3`}>
-                  <User className={`h-4 w-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
-                </div>
-                <span>Add New Patient</span>
-              </Link>
-              
-              <Link
-                to="/dashboard"
-                className={`py-3 px-4 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'} rounded-lg transition-colors flex items-center`}
-              >
-                <div className={`h-8 w-8 rounded-full ${isDark ? 'bg-slate-600' : 'bg-white'} flex items-center justify-center mr-3`}>
-                  <Home className={`h-4 w-4 ${isDark ? 'text-sky-400' : 'text-sky-600'}`} />
-                </div>
-                <span>Back to Dashboard</span>
-              </Link>
-            </div>
-          </div>
-          
-          {/* Information about saving records and exporting */}
-          <div className="mt-6 p-4 border rounded-lg border-dashed border-emerald-500/50">
-            <h3 className="font-semibold mb-2 text-emerald-500">About Saving and Exporting</h3>
-            <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'} mb-3`}>
-              When you perform a diabetes assessment, you'll be able to:
-            </p>
-            <ul className={`text-sm space-y-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              <li className="flex items-start">
-                <CheckCircle2 className={`h-4 w-4 mr-2 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'} flex-shrink-0`} />
-                <span>Save assessment results directly to the patient's electronic health record</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className={`h-4 w-4 mr-2 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'} flex-shrink-0`} />
-                <span>Export detailed results in PDF format for printing or sharing</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className={`h-4 w-4 mr-2 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'} flex-shrink-0`} />
-                <span>View historical assessments to track changes over time</span>
-              </li>
-            </ul>
-          </div>
+
         </div>
       </div>
     </>

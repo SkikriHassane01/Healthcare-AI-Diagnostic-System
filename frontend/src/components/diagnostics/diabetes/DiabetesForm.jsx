@@ -198,7 +198,7 @@ const DiabetesForm = () => {
 
   // Handle going back to patient detail
   const handleBack = () => {
-    navigate(`/patients/${patientId}`);
+    navigate(`/dashboard`);
   };
   
   // Show loading state if patient data is still loading
@@ -548,8 +548,8 @@ const DiabetesForm = () => {
                 ></div>
               </div>
               <div className="flex justify-between mt-1 text-sm">
-                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>0% Risk</span>
-                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>100% Risk</span>
+                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>0% Confidence</span>
+                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>100% Confidence</span>
               </div>
             </div>
             
@@ -586,23 +586,67 @@ const DiabetesForm = () => {
                 </div>
               </div>
             )}
-            
-            {/* Return to Assessment Button */}
-            <button
-              onClick={() => setPredictionResult(null)}
-              className={`w-full py-2 px-4 rounded-md transition-colors font-medium ${
-                isDark 
-                  ? 'bg-slate-700 hover:bg-slate-600 text-white' 
-                  : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
-              }`}
-            >
-              Edit Assessment Data
-            </button>
-          </div>
-          
+            {/* Return to Assessment Button and History Button */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
+              <button
+                onClick={() => navigate(`/patients/${patientId}/diabetes-history`)}
+                className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                  isDark 
+                    ? 'bg-slate-700 hover:bg-slate-600 text-white' 
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                View History
+              </button>
+              
+              <button
+                onClick={() => setPredictionResult(null)}
+                className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                  isDark 
+                    ? 'bg-sky-700 hover:bg-sky-600 text-white' 
+                    : 'bg-sky-600 hover:bg-sky-500 text-white'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Assessment
+              </button>
+              
+              <button
+                onClick={() => {
+                  setPredictionResult(null);
+                  setFormData({
+                    gender: 'Male',
+                    age: '',
+                    hypertension: 0,
+                    heart_disease: 0,
+                    smoking_history: 'never',
+                    bmi: '',
+                    HbA1c_level: '',
+                    blood_glucose_level: ''
+                  });
+                }}
+                className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                  isDark 
+                    ? 'bg-emerald-700 hover:bg-emerald-600 text-white' 
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                New Assessment
+              </button>
+            </div>
+          </div> 
         )}
       </div>
     </div>
+    
   );
 };
 

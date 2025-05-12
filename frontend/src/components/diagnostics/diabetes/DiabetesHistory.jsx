@@ -90,7 +90,7 @@ const DiabetesHistory = () => {
   
   // Handle going back to patient detail
   const handleBack = () => {
-    navigate(`/patients/${patientId}`);
+    navigate(`/dashboard`);
   };
   
   // Show loading state if patient data is still loading
