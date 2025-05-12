@@ -4,16 +4,14 @@ import {
   ArrowLeft, 
   AlertCircle, 
   CheckCircle2, 
-  Info, 
-  ArrowRight, 
+  Heart,
+  HeartPulse,
   User,
-  FileDown,
-  Save
+  FileBarChart2
 } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
 import patientService from '../../../services/patient.service';
 import diagnosticsService from '../../../services/diagnostics.service';
-import jsPDF from 'jspdf';
 
 const BreastCancerForm = () => {
   const { isDark } = useTheme();
@@ -24,7 +22,7 @@ const BreastCancerForm = () => {
   const [patient, setPatient] = useState(null);
   const [patientLoading, setPatientLoading] = useState(true);
   
-  // Form state for breast cancer metrics
+  // Form state
   const [formData, setFormData] = useState({
     radius_mean: '',
     texture_mean: '',
@@ -38,13 +36,14 @@ const BreastCancerForm = () => {
     fractal_dimension_mean: ''
   });
   
-  // Results/validation state
+  // Form validation
   const [formErrors, setFormErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  
+  // API state
+  const [loading, setLoading] = useState(false);
   const [predicting, setPredicting] = useState(false);
-  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [predictionResult, setPredictionResult] = useState(null);
   
   // Load patient data
   useEffect(() => {
@@ -67,43 +66,40 @@ const BreastCancerForm = () => {
     }
   }, [patientId]);
 
-  // Handle form input change
-  const handleInputChange = (e) => {
+  // Handle input change
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
     
-    // Clear error for this field when user types
+    // Clear error for this field
     if (formErrors[name]) {
-      setFormErrors({
-        ...formErrors,
-        [name]: null
-      });
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
-
+  
   // Validate form
   const validateForm = () => {
     const errors = {};
-    let isValid = true;
-
-    // Check if all fields have values and are numbers
+    
+    // Check all required fields
     Object.entries(formData).forEach(([key, value]) => {
       if (!value.trim()) {
-        errors[key] = 'Required';
-        isValid = false;
+        errors[key] = 'This field is required';
       } else if (isNaN(parseFloat(value))) {
         errors[key] = 'Must be a number';
-        isValid = false;
       }
     });
-
+    
     setFormErrors(errors);
-    return isValid;
+    return Object.keys(errors).length === 0;
   };
-
+  
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,49 +109,24 @@ const BreastCancerForm = () => {
       return;
     }
     
+    // Reset states
     setError('');
     setPredicting(true);
-    setResult(null); // Clear previous results
+    setPredictionResult(null);
     
     try {
-      // Prepare data for prediction
+      // Make sure all fields are properly formatted for the backend
       const dataForPrediction = {};
-      Object.keys(formData).forEach(key => {
-        // Ensure all values are properly formatted numbers
-        dataForPrediction[key] = parseFloat(formData[key]);
+      Object.entries(formData).forEach(([key, value]) => {
+        dataForPrediction[key] = parseFloat(value);
       });
       
       console.log("Sending prediction data:", dataForPrediction);
       
-      // Call the actual prediction API
-      const apiResult = await diagnosticsService.predictBreastCancer(patientId, dataForPrediction);
-      console.log("Prediction result received:", apiResult);
-      
-      // The API returns data in the format: { patient_id, patient_name, prediction: {...} }
-      // We need to extract and format the prediction object
-      if (apiResult && apiResult.prediction) {
-        console.log("Raw API response:", apiResult);
-        
-        // Extract the prediction data
-        const predictionData = apiResult.prediction;
-        
-        // Format the prediction for display
-        const formattedResult = {
-          // If the API returns 'malignant' for prediction.result or prediction.prediction, set result to true
-          result: predictionData.result === 'malignant' || 
-                 predictionData.prediction === true || 
-                 predictionData.prediction === 'malignant',
-          probability: predictionData.probability || predictionData.confidence || 0.5,
-          // Add ID and other metadata
-          id: predictionData.id || "temp-id-" + new Date().getTime(), // Use a temp ID if none is provided
-          timestamp: predictionData.timestamp || new Date().toISOString(),
-        };
-        
-        console.log("Formatted prediction result:", formattedResult);
-        setResult(formattedResult);
-      } else {
-        throw new Error('Invalid response format from the server');
-      }
+      // Make prediction
+      const result = await diagnosticsService.predictBreastCancer(patientId, dataForPrediction);
+      console.log("Prediction result received:", result);
+      setPredictionResult(result.prediction);
     } catch (err) {
       console.error("Prediction error:", err);
       setError(err.message || 'Failed to make prediction. Please try again.');
@@ -163,8 +134,8 @@ const BreastCancerForm = () => {
       setPredicting(false);
     }
   };
-
-  // Load sample data
+  
+  // Load sample data for testing
   const loadSampleData = () => {
     setFormData({
       radius_mean: '17.99',
@@ -180,140 +151,43 @@ const BreastCancerForm = () => {
     });
     setFormErrors({});
   };
-  
+
   // Save assessment to patient records
   const saveToPatientRecords = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       
-      // Properly save the assessment with the correct ID
-      if (!result || !result.id) {
+      if (!predictionResult || !predictionResult.id) {
         throw new Error('No valid prediction ID found');
       }
       
-      console.log("Saving assessment for patient:", patientId);
-      console.log("Result:", result);
-      
-      // Actually call the API to update the prediction
-      await diagnosticsService.updateBreastCancerPrediction(result.id, {
-        doctor_assessment: result.result ? 'malignant' : 'benign',
+      // Call the API to update the prediction with doctor's assessment
+      await diagnosticsService.updateBreastCancerPrediction(predictionResult.id, {
+        doctor_assessment: predictionResult.result ? 'malignant' : 'benign',
         doctor_notes: 'Assessment confirmed by healthcare professional.'
       });
       
-      setSuccessMessage('Assessment saved successfully to patient records');
-      setTimeout(() => {
-        navigate(`/patients/${patientId}/breast-cancer-history`);
-      }, 1500);
+      navigate(`/patients/${patientId}/breast-cancer-history`);
     } catch (err) {
       setError(err.message || 'Failed to save assessment');
       console.error(err);
     } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Export results as PDF
-  const exportResults = () => {
-    try {
-      if (!result) {
-        setError('No results to export');
-        return;
-      }
-      
-      console.log("Exporting results to PDF:", result);
-      const doc = new jsPDF();
-      
-      // Add title
-      doc.setFontSize(18);
-      doc.text('Breast Cancer Assessment Report', 20, 20);
-      
-      // Add patient info
-      doc.setFontSize(12);
-      doc.text(`Patient: ${patient.first_name} ${patient.last_name}`, 20, 30);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 40);
-      
-      // Add assessment result
-      doc.setFontSize(14);
-      doc.text('Assessment Result:', 20, 55);
-      doc.setFontSize(12);
-      doc.text(`Diagnosis: ${result.result ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}`, 30, 65);
-      doc.text(`Confidence: ${Math.round(result.probability * 100)}%`, 30, 75);
-      
-      // Add input data
-      doc.setFontSize(14);
-      doc.text('Input Data:', 20, 90);
-      
-      let yPos = 100;
-      Object.entries(formData).forEach(([key, value], index) => {
-        const formattedKey = key
-          .replace('_mean', '')
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-          
-        doc.setFontSize(10);
-        doc.text(`${formattedKey}: ${value}`, 30, yPos);
-        yPos += 10;
-        
-        // Start a new column if we have too many items
-        if (index === 4) {
-          yPos = 100;
-          doc.text(`${formattedKey}: ${value}`, 120, yPos);
-          yPos += 10;
-        } else if (index > 4) {
-          doc.text(`${formattedKey}: ${value}`, 120, yPos);
-          yPos += 10;
-        }
-      });
-      
-      // Add timestamp
-      doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 280);
-      
-      // Save the PDF
-      const filename = `breast_cancer_${patient.last_name}_${new Date().toISOString().split('T')[0]}.pdf`;
-      doc.save(filename);
-      
-      setSuccessMessage('PDF exported successfully');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (err) {
-      console.error('Error exporting PDF:', err);
-      setError('Failed to export results as PDF');
+      setLoading(false);
     }
   };
 
-  // Helper function to display feature names in a more readable format
+  // Handle going back to dashboard
+  const handleBack = () => {
+    navigate('/dashboard');
+  };
+  
+  // Format feature name for display
   const formatFeatureName = (name) => {
     return name
       .replace('_mean', '')
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
-
-  // Handle going back to patient detail
-  const handleBack = () => {
-    navigate(`/patients/${patientId}`);
-  };
-  
-  // Reset the form
-  const resetForm = () => {
-    setFormData({
-      radius_mean: '',
-      texture_mean: '',
-      perimeter_mean: '',
-      area_mean: '',
-      smoothness_mean: '',
-      compactness_mean: '',
-      concavity_mean: '',
-      concave_points_mean: '',
-      symmetry_mean: '',
-      fractal_dimension_mean: ''
-    });
-    setFormErrors({});
-    setResult(null);
-    setSuccessMessage('');
-    setError('');
   };
 
   // Show loading state if patient data is still loading
@@ -329,7 +203,7 @@ const BreastCancerForm = () => {
       </div>
     );
   }
-
+  
   return (
     <div className={`p-6 min-h-screen ${isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'} transition-colors duration-300`}>
       <div className="max-w-4xl mx-auto">
@@ -343,30 +217,6 @@ const BreastCancerForm = () => {
           </button>
           <h1 className="text-2xl font-bold">Breast Cancer Assessment</h1>
         </div>
-        
-        {/* Success Message */}
-        {successMessage && (
-          <div className={`p-4 border rounded-md mb-6 ${
-            isDark ? 'bg-emerald-900/20 border-emerald-800 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-          }`}>
-            <div className="flex items-start">
-              <CheckCircle2 className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-              <p>{successMessage}</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Error Message */}
-        {error && (
-          <div className={`p-4 border rounded-md mb-6 ${
-            isDark ? 'bg-rose-900/20 border-rose-800 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-700'
-          }`}>
-            <div className="flex items-start">
-              <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-              <p>{error}</p>
-            </div>
-          </div>
-        )}
         
         {/* Patient info card */}
         {patient && (
@@ -392,165 +242,219 @@ const BreastCancerForm = () => {
           </div>
         )}
         
-        {/* Assessment Form or Results */}
-        <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6`}>
-          {!result ? (
-            <>
-              <h2 className="text-lg font-semibold mb-4">Fine Needle Aspiration (FNA) Test Data</h2>
-              
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={loadSampleData}
-                    className={`text-sm px-3 py-1 ${
-                      isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                    } rounded flex items-center`}
-                  >
-                    <Info className="h-3 w-3 mr-1" />
-                    Load Sample Data
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {Object.keys(formData).map((field) => (
-                    <div key={field}>
-                      <label
-                        htmlFor={field}
-                        className={`block text-sm font-medium mb-1 ${
-                          isDark ? 'text-slate-300' : 'text-slate-700'
-                        }`}
-                      >
-                        {formatFeatureName(field)}
-                      </label>
-                      <input
-                        type="text"
-                        id={field}
-                        name={field}
-                        value={formData[field]}
-                        onChange={handleInputChange}
-                        className={`w-full p-2 rounded-md border ${
-                          formErrors[field]
-                            ? 'border-red-500'
-                            : isDark
-                            ? 'bg-slate-700 border-slate-600 text-white'
-                            : 'bg-white border-slate-300'
-                        }`}
-                        placeholder={`Enter ${formatFeatureName(field).toLowerCase()}`}
-                      />
-                      {formErrors[field] && (
-                        <p className="text-red-500 text-xs mt-1">{formErrors[field]}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex justify-center">
-                  <button
-                    type="submit"
-                    disabled={predicting}
-                    className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-md transition-colors flex items-center"
-                  >
-                    {predicting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRight className="h-4 w-4 mr-2" />
-                        Analyze Data
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </>
-          ) : (
-            <>
-              <h2 className="text-lg font-semibold mb-4">Analysis Results</h2>
-              
-              {/* Summary */}
-              <div className={`p-4 ${result.result ? isDark ? 'bg-rose-900/20 border-rose-800' : 'bg-rose-50 border-rose-200' : isDark ? 'bg-emerald-900/20 border-emerald-800' : 'bg-emerald-50 border-emerald-200'} border rounded-lg mb-6`}>
-                <div className="flex items-center">
-                  {result.result
-                    ? <AlertCircle className={`h-5 w-5 mr-2 ${isDark ? 'text-rose-400' : 'text-rose-500'}`}/>
-                    : <CheckCircle2 className={`h-5 w-5 mr-2 ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`}/>
-                  }
-                  <h4 className="font-medium">{result.result ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}</h4>
-                </div>
-                <div className="mt-2">
-                  <div className="flex justify-between items-center">
-                    <span className={`${isDark ? 'text-slate-300' : 'text-slate-600'} text-sm`}>Confidence:</span>
-                    <span className="font-semibold">{Math.round(result.probability * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
-                    <div className={`${result.result ? 'bg-rose-500' : 'bg-emerald-500'} h-2 rounded-full`} style={{width: `${result.probability * 100}%`}}/>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Patient Data Summary */}
-              <div className={`p-4 ${isDark ? 'bg-slate-700' : 'bg-slate-50'} rounded-lg mb-6`}>
-                <h4 className="font-medium mb-3">Analyzed Data Values</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(formData).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                        {formatFeatureName(key)}:
-                      </span>
-                      <span className="text-sm font-medium">{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <button 
-                  onClick={saveToPatientRecords}
-                  disabled={isLoading || successMessage}
-                  className={`px-4 py-2 ${
-                    isLoading || successMessage 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-pink-600 hover:bg-pink-500'
-                  } text-white rounded-md transition-colors flex-1 flex items-center justify-center`}
+        {/* Error Message */}
+        {error && (
+          <div className="bg-rose-100 dark:bg-rose-900/30 border border-rose-400 dark:border-rose-600 text-rose-700 dark:text-rose-400 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+        
+        {/* Assessment Form */}
+        {!predictionResult ? (
+          <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6`}>
+            <h2 className="text-lg font-semibold mb-4 flex items-center">
+              <HeartPulse className="mr-2 h-5 w-5 text-pink-600" />
+              Fine Needle Aspiration (FNA) Test Data
+            </h2>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={loadSampleData}
+                  className={`text-sm px-3 py-1 ${
+                    isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  } rounded flex items-center`}
                 >
-                  {isLoading ? (
+                  Load Sample Data
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {Object.keys(formData).map((field) => (
+                  <div key={field}>
+                    <label
+                      htmlFor={field}
+                      className={`block text-sm font-medium mb-1 ${
+                        formErrors[field] ? 'text-rose-500' : isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}
+                    >
+                      {formatFeatureName(field)} *
+                    </label>
+                    <input
+                      type="text"
+                      id={field}
+                      name={field}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      className={`w-full px-3 py-2 rounded-md ${
+                        formErrors[field]
+                          ? 'border-rose-500'
+                          : isDark
+                          ? 'bg-slate-700 border-slate-600 text-white'
+                          : 'bg-white border-slate-300'
+                      } border focus:outline-none focus:ring-2 focus:ring-pink-500`}
+                      placeholder={`Enter ${formatFeatureName(field).toLowerCase()}`}
+                    />
+                    {formErrors[field] && (
+                      <p className="mt-1 text-sm text-rose-500">{formErrors[field]}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  disabled={predicting}
+                  className="w-full py-3 px-4 bg-pink-600 hover:bg-pink-500 text-white rounded-md transition-colors font-medium flex items-center justify-center shadow-md"
+                >
+                  {predicting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Saving...
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Running Prediction...
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save to Patient Records
+                      <FileBarChart2 className="w-5 h-5 mr-2" />
+                      Run Breast Cancer Prediction
                     </>
                   )}
                 </button>
-                <button 
-                  onClick={exportResults}
-                  disabled={isLoading}
-                  className={`px-4 py-2 border border-pink-600 text-pink-600 ${
-                    isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-pink-50 dark:hover:bg-pink-900/20'
-                  } rounded-md transition-colors flex-1 flex items-center justify-center`}
-                >
-                  <FileDown className="h-4 w-4 mr-2" />
-                  Export Results (PDF)
-                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          // Prediction Result View
+          <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6`}>
+            <h2 className="text-xl font-semibold mb-4">Breast Cancer Prediction Results</h2>
+            
+            {/* Result Card */}
+            <div className={`mb-6 p-4 rounded-lg ${
+              predictionResult.result 
+                ? (isDark ? 'bg-rose-900/30 border-rose-700' : 'bg-rose-50 border-rose-200') 
+                : (isDark ? 'bg-emerald-900/30 border-emerald-700' : 'bg-emerald-50 border-emerald-200')
+            } border`}>
+              <div className="flex items-center mb-4">
+                {predictionResult.result ? (
+                  <div className="h-12 w-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                    <AlertCircle className="h-6 w-6" />
+                  </div>
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                )}
+                <div className="ml-4">
+                  <h3 className={`text-lg font-semibold ${
+                    predictionResult.result 
+                      ? (isDark ? 'text-rose-400' : 'text-rose-700')
+                      : (isDark ? 'text-emerald-400' : 'text-emerald-700')
+                  }`}>
+                    {predictionResult.result ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}
+                  </h3>
+                  <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Confidence: {(predictionResult.confidence * 100).toFixed(1)}%
+                  </p>
+                </div>
               </div>
               
-              <div className="mt-4 text-center">
-                <button
-                  onClick={resetForm}
-                  className={`text-sm ${isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Start New Assessment
-                </button>
+              <div className={`w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden`}>
+                <div 
+                  className={`h-full ${predictionResult.result ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full`}
+                  style={{ width: `${predictionResult.confidence * 100}%` }}
+                ></div>
               </div>
-            </>
-          )}
-        </div>
+              <div className="flex justify-between mt-1 text-sm">
+                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>0% Confidence</span>
+                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>100% Confidence</span>
+              </div>
+            </div>
+            
+            {/* Input Data Summary */}
+            <div className={`mb-6 p-4 ${isDark ? 'bg-slate-700' : 'bg-slate-50'} rounded-lg`}>
+              <h3 className="text-lg font-semibold mb-2">Analyzed Data Values</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(formData).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {formatFeatureName(key)}:
+                    </span>
+                    <span className="text-sm font-medium">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
+            <button
+              onClick={() => navigate(`/patients/${patientId}/breast-cancer-history`)}
+              className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                isDark 
+                  ? 'bg-slate-700 hover:bg-slate-600 text-white' 
+                  : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              View History
+            </button>
+            
+            <button
+              onClick={() => setPredictionResult(null)}
+              className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                isDark 
+                  ? 'bg-pink-700 hover:bg-pink-600 text-white' 
+                  : 'bg-pink-600 hover:bg-pink-500 text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Assessment
+            </button>
+            
+            <button
+              onClick={() => {
+                // Automatically save the prediction result first
+                if (predictionResult && predictionResult.id) {
+                  diagnosticsService.updateBreastCancerPrediction(predictionResult.id, {
+                    doctor_assessment: predictionResult.result ? 'malignant' : 'benign',
+                    doctor_notes: 'Assessment confirmed by healthcare professional.'
+                  }).catch(err => console.error('Error saving assessment:', err));
+                }
+                
+                // Reset form regardless of save success/failure
+                setPredictionResult(null);
+                setFormData({
+                  radius_mean: '',
+                  texture_mean: '',
+                  perimeter_mean: '',
+                  area_mean: '',
+                  smoothness_mean: '',
+                  compactness_mean: '',
+                  concavity_mean: '',
+                  concave_points_mean: '',
+                  symmetry_mean: '',
+                  fractal_dimension_mean: ''
+                });
+              }}
+              className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                isDark 
+                  ? 'bg-emerald-700 hover:bg-emerald-600 text-white' 
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              New Assessment
+            </button>
+            </div>
+          </div> 
+        )}
       </div>
     </div>
   );

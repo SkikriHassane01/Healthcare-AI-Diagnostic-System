@@ -1,4 +1,3 @@
-// frontend/src/components/dashboard/views/BreastCancerView.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import patientService from '../../../services/patient.service';

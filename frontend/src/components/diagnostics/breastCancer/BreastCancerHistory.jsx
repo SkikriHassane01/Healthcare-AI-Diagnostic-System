@@ -5,14 +5,13 @@ import patientService from '../../../services/patient.service';
 import diagnosticsService from '../../../services/diagnostics.service';
 import { 
   ArrowLeft, 
-  FileBarChart2, 
+  Heart, 
   Calendar, 
   ChevronRight,
   ChevronLeft,
-  FileDown,
-  Printer,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  HeartPulse
 } from 'lucide-react';
 
 const BreastCancerHistory = () => {
@@ -31,8 +30,9 @@ const BreastCancerHistory = () => {
   
   // Selected prediction for viewing details
   const [selectedPrediction, setSelectedPrediction] = useState(null);
-  
+
   // Load patient data and prediction history
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -47,23 +47,22 @@ const BreastCancerHistory = () => {
           const historyResponse = await diagnosticsService.getBreastCancerHistory(patientId);
           console.log("History response:", historyResponse);
           
-          // Check if history exists and is an array
-          if (historyResponse && historyResponse.history && Array.isArray(historyResponse.history)) {
+          if (historyResponse && historyResponse.history) {
             setHistory(historyResponse.history);
           } else {
-            // Handle case where history exists but isn't an array
-            console.warn("History is not in expected format:", historyResponse);
+            // Handle case where history exists but is empty
             setHistory([]);
           }
+          setError(''); // Clear any previous errors
         } catch (historyError) {
           console.error("Error fetching history:", historyError);
-          setError("Failed to load prediction history. " + historyError.message);
-          setHistory([]);
+          setError("Failed to load prediction history");
+          setHistory([]); // Set empty history on error
         }
         
       } catch (patientError) {
         console.error("Error fetching patient:", patientError);
-        setError("Failed to load patient data. " + patientError.message);
+        setError("Failed to load patient data");
       } finally {
         setLoading(false);
         setPatientLoading(false);
@@ -74,17 +73,6 @@ const BreastCancerHistory = () => {
       fetchData();
     }
   }, [patientId]);
-  
-  // Add this helper function to handle possibly missing data
-  const getConfidencePercentage = (prediction) => {
-    if (!prediction) return "N/A";
-    
-    const probability = prediction.prediction_probability !== undefined 
-      ? prediction.prediction_probability 
-      : (prediction.confidence !== undefined ? prediction.confidence : 0);
-      
-    return (probability * 100).toFixed(1) + '%';
-  };
   
   // Format date for display
   const formatDate = (dateString) => {
@@ -110,16 +98,6 @@ const BreastCancerHistory = () => {
     }
   };
   
-  // Handle viewing a prediction's details
-  const handleViewPrediction = (prediction) => {
-    setSelectedPrediction(prediction);
-  };
-  
-  // Handle going back to patient detail
-  const handleBack = () => {
-    navigate(`/patients/${patientId}`);
-  };
-  
   // Helper function to display feature names in a more readable format
   const formatFeatureName = (name) => {
     return name
@@ -129,17 +107,14 @@ const BreastCancerHistory = () => {
       .join(' ');
   };
   
-  // Export prediction result as PDF
-  const exportToPDF = (prediction) => {
-    // In a real application, you would implement a PDF export function here
-    // using a library like jsPDF or similar
-    const filename = `breast_cancer_result_${prediction.id}_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`;
-    alert(`Downloading ${filename}... (PDF export simulation)`);
+  // Handle viewing a prediction's details
+  const handleViewPrediction = (prediction) => {
+    setSelectedPrediction(prediction);
   };
   
-  // Print prediction result
-  const printResult = () => {
-    window.print();
+  // Handle going back to patient detail
+  const handleBack = () => {
+    navigate(`/patients/${patientId}`);
   };
   
   // Show loading state if patient data is still loading
@@ -175,7 +150,7 @@ const BreastCancerHistory = () => {
             to={`/patients/${patientId}/breast-cancer-assessment`}
             className="flex items-center px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-md shadow-md transition-colors"
           >
-            <FileBarChart2 className="w-5 h-5 mr-2" />
+            <HeartPulse className="w-5 h-5 mr-2" />
             New Assessment
           </Link>
         </div>
@@ -237,12 +212,12 @@ const BreastCancerHistory = () => {
             
             {/* Prediction Result Card */}
             <div className={`mb-6 p-4 rounded-lg ${
-              selectedPrediction.prediction_result 
+              selectedPrediction.prediction_result === 'malignant' 
                 ? (isDark ? 'bg-rose-900/30 border-rose-700' : 'bg-rose-50 border-rose-200') 
                 : (isDark ? 'bg-emerald-900/30 border-emerald-700' : 'bg-emerald-50 border-emerald-200')
             } border`}>
               <div className="flex items-center mb-4">
-                {selectedPrediction.prediction_result ? (
+                {selectedPrediction.prediction_result === 'malignant' ? (
                   <div className="h-12 w-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
                     <AlertCircle className="h-6 w-6" />
                   </div>
@@ -253,11 +228,11 @@ const BreastCancerHistory = () => {
                 )}
                 <div className="ml-4">
                   <h3 className={`text-lg font-semibold ${
-                    selectedPrediction.prediction_result 
+                    selectedPrediction.prediction_result === 'malignant' 
                       ? (isDark ? 'text-rose-400' : 'text-rose-700')
                       : (isDark ? 'text-emerald-400' : 'text-emerald-700')
                   }`}>
-                    {selectedPrediction.prediction_result ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}
+                    {selectedPrediction.prediction_result === 'malignant' ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}
                   </h3>
                   <div className="flex mt-1">
                     <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mr-4`}>
@@ -267,13 +242,13 @@ const BreastCancerHistory = () => {
                     {/* Show doctor's assessment if available */}
                     {selectedPrediction.doctor_assessment !== null && (
                       <p className={`font-medium ${
-                        selectedPrediction.doctor_assessment 
+                        selectedPrediction.doctor_assessment === 'malignant' 
                           ? (isDark ? 'text-rose-400' : 'text-rose-700')
                           : (isDark ? 'text-emerald-400' : 'text-emerald-700')
                       }`}>
                         Doctor's Assessment: 
                         <span className="ml-1">
-                          {selectedPrediction.doctor_assessment ? 'Confirmed' : 'Ruled Out'}
+                          {selectedPrediction.doctor_assessment === 'malignant' ? 'Confirmed' : 'Ruled Out'}
                         </span>
                       </p>
                     )}
@@ -283,7 +258,7 @@ const BreastCancerHistory = () => {
               
               <div className={`w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden`}>
                 <div 
-                  className={`h-full ${selectedPrediction.prediction_result ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full`}
+                  className={`h-full ${selectedPrediction.prediction_result === 'malignant' ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full`}
                   style={{ width: `${selectedPrediction.prediction_probability * 100}%` }}
                 ></div>
               </div>
@@ -317,31 +292,12 @@ const BreastCancerHistory = () => {
                 ))}
               </div>
             </div>
-            
-            {/* Export and Print Options */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => exportToPDF(selectedPrediction)}
-                className={`px-4 py-2 ${isDark ? 'bg-pink-700 hover:bg-pink-600' : 'bg-pink-600 hover:bg-pink-500'} text-white rounded-md transition-colors flex items-center justify-center`}
-              >
-                <FileDown className="h-5 w-5 mr-2" />
-                Export as PDF
-              </button>
-              
-              <button
-                onClick={printResult}
-                className={`px-4 py-2 ${isDark ? 'border-pink-700 text-pink-400 hover:bg-pink-900/20' : 'border-pink-600 text-pink-600 hover:bg-pink-50'} border rounded-md transition-colors flex items-center justify-center`}
-              >
-                <Printer className="h-5 w-5 mr-2" />
-                Print Result
-              </button>
-            </div>
           </div>
         ) : history.length === 0 ? (
           // No history message
           <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6 text-center`}>
             <div className="py-8">
-              <FileBarChart2 className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
+              <HeartPulse className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
               <h3 className="text-lg font-semibold mb-2">No Assessment History</h3>
               <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} mb-4`}>
                 This patient does not have any breast cancer assessments yet.
@@ -350,7 +306,7 @@ const BreastCancerHistory = () => {
                 to={`/patients/${patientId}/breast-cancer-assessment`}
                 className="inline-flex items-center px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-md shadow-md transition-colors"
               >
-                <FileBarChart2 className="w-5 h-5 mr-2" />
+                <HeartPulse className="w-5 h-5 mr-2" />
                 Create First Assessment
               </Link>
             </div>
@@ -371,7 +327,7 @@ const BreastCancerHistory = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      {prediction.prediction_result ? (
+                      {prediction.prediction_result === 'malignant' ? (
                         <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center mr-4">
                           <AlertCircle className="h-5 w-5" />
                         </div>
@@ -383,16 +339,16 @@ const BreastCancerHistory = () => {
                       
                       <div>
                         <h4 className="font-medium">
-                          {prediction.prediction_result ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}
+                          {prediction.prediction_result === 'malignant' ? 'Malignant (Cancerous)' : 'Benign (Non-Cancerous)'}
                           
                           {/* Show doctor's assessment if available */}
                           {prediction.doctor_assessment !== null && (
                             <span className={`ml-2 text-sm font-normal ${
-                              prediction.doctor_assessment 
+                              prediction.doctor_assessment === 'malignant' 
                                 ? (isDark ? 'text-rose-400' : 'text-rose-600')
                                 : (isDark ? 'text-emerald-400' : 'text-emerald-600')
                             }`}>
-                              (Doctor {prediction.doctor_assessment ? 'Confirmed' : 'Ruled Out'})
+                              (Doctor {prediction.doctor_assessment === 'malignant' ? 'Confirmed' : 'Ruled Out'})
                             </span>
                           )}
                         </h4>
@@ -407,7 +363,7 @@ const BreastCancerHistory = () => {
                       <div className="mr-4">
                         <div className="text-right">
                           <span className={`font-medium ${
-                            prediction.prediction_result 
+                            prediction.prediction_result === 'malignant' 
                               ? (isDark ? 'text-rose-400' : 'text-rose-600')
                               : (isDark ? 'text-emerald-400' : 'text-emerald-600')
                           }`}>

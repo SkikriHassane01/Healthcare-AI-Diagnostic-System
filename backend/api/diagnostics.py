@@ -288,7 +288,7 @@ def get_breast_cancer_history(current_user, patient_id):
         logger.error(f"Error retrieving breast cancer history: {str(e)}", exc_info=True)
         db.session.rollback()
         return jsonify({"message": "An error occurred retrieving prediction history"}), 500
-
+    
 @diagnostics_bp.route('/breast-cancer/prediction/<prediction_id>', methods=['GET'])
 @token_required
 def get_breast_cancer_prediction(current_user, prediction_id):

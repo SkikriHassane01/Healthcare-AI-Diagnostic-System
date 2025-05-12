@@ -23,7 +23,7 @@ class BreastCancerModel:
     
     def __init__(self):
         """Initialize the model by loading from disk"""
-        self.model_path = os.path.join(os.path.dirname(__file__), 'breast_cancer_model.pkl')
+        self.model_path = os.path.join(os.path.dirname(__file__), 'breastCancerModel.pkl')
         self.model = self._load_model()
         
         # Define feature information for validation and preprocessing
@@ -220,132 +220,6 @@ class BreastCancerModel:
             logger.error(f"Error in breast cancer prediction process: {str(e)}", exc_info=True)
             return {"error": "An error occurred during prediction processing"}
     
-    def _calculate_feature_importance(self, data, preprocessed_data):
-        """
-        Calculate feature importance for the prediction.
-        
-        Args:
-            data (dict): Original input data
-            preprocessed_data (np.ndarray): Preprocessed data used for prediction
-            
-        Returns:
-            list: Feature importance sorted by importance value
-        """
-        feature_importance = []
-        
-        try:
-            # If the model supports feature importance, use it
-            if hasattr(self.model, 'feature_importances_'):
-                importances = self.model.feature_importances_
-                
-                # Create a list of (feature, importance) tuples
-                importance_pairs = [(self.feature_order[i], float(importances[i])) 
-                                  for i in range(len(self.feature_order))]
-                
-                # Sort by importance (descending)
-                importance_pairs.sort(key=lambda x: x[1], reverse=True)
-                
-                # Format the result
-                for feature, importance in importance_pairs:
-                    # Format feature name for display
-                    display_name = feature.replace('_', ' ').title()
-                    
-                    # Assign an importance level
-                    if importance >= 0.15:
-                        level = "high"
-                    elif importance >= 0.05:
-                        level = "medium"
-                    else:
-                        level = "low"
-                    
-                    # Create a description based on feature and its value
-                    value = float(data.get(feature, 0))
-                    if feature in self.features_info["continuous"]:
-                        limits = self.features_info["continuous"][feature]
-                        if value > (limits["max"] + limits["min"]) / 2:
-                            description = f"High {display_name.lower()} value detected"
-                        elif value < (limits["max"] + limits["min"]) / 4:
-                            description = f"Low {display_name.lower()} value detected"
-                        else:
-                            description = f"Moderate {display_name.lower()} value detected"
-                    else:
-                        description = f"{display_name} contributes to the prediction"
-                    
-                    feature_importance.append({
-                        "feature": feature,
-                        "display_name": display_name,
-                        "importance": importance,
-                        "level": level,
-                        "value": value,
-                        "description": description
-                    })
-            else:
-                # For models without feature importance, create synthetic importance
-                logger.warning("Model does not support feature importance, creating synthetic importance")
-                
-                # Create synthetic importance with highest weights for common factors
-                for feature in self.feature_order:
-                    value = float(data.get(feature, 0))
-                    display_name = feature.replace('_', ' ').title()
-                    
-                    # Assign synthetic importance
-                    if feature in ["radius_mean", "area_mean", "concavity_mean", "concave_points_mean"]:
-                        importance = 0.15 + np.random.random() * 0.1  # High importance
-                        level = "high"
-                    elif feature in ["perimeter_mean", "texture_mean"]:
-                        importance = 0.08 + np.random.random() * 0.07  # Medium importance
-                        level = "medium"
-                    else:
-                        importance = 0.02 + np.random.random() * 0.03  # Low importance
-                        level = "low"
-                    
-                    # Create a description based on feature and its value
-                    if feature in self.features_info["continuous"]:
-                        limits = self.features_info["continuous"][feature]
-                        if value > (limits["max"] + limits["min"]) / 2:
-                            description = f"High {display_name.lower()} value detected"
-                        elif value < (limits["max"] + limits["min"]) / 4:
-                            description = f"Low {display_name.lower()} value detected"
-                        else:
-                            description = f"Moderate {display_name.lower()} value detected"
-                    else:
-                        description = f"{display_name} contributes to the prediction"
-                    
-                    feature_importance.append({
-                        "feature": feature,
-                        "display_name": display_name,
-                        "importance": importance,
-                        "level": level,
-                        "value": value,
-                        "description": description
-                    })
-                
-                # Sort by importance (descending)
-                feature_importance.sort(key=lambda x: x["importance"], reverse=True)
-        
-        except Exception as e:
-            logger.error(f"Error calculating feature importance: {str(e)}")
-            # Return minimal feature importance if calculation fails
-            feature_importance = [
-                {
-                    "feature": "radius_mean",
-                    "display_name": "Radius Mean",
-                    "importance": 0.2,
-                    "level": "high",
-                    "value": float(data.get("radius_mean", 0)),
-                    "description": "Mean radius of cell nuclei is a key factor"
-                },
-                {
-                    "feature": "concave_points_mean",
-                    "display_name": "Concave Points Mean",
-                    "importance": 0.15,
-                    "level": "high",
-                    "value": float(data.get("concave_points_mean", 0)),
-                    "description": "Mean number of concave points of cell nuclei is a key factor"
-                }
-            ]
-        
-        return feature_importance
     
     def _store_prediction(self, input_data, result, patient_id):
         """
