@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import patientService from '../../../services/patient.service';
 import { 
   Home, 
@@ -18,7 +18,7 @@ import {
   Activity
 } from 'lucide-react';
 
-const DiabetesView = ({ isDark }) => {
+const DiabetesView = ({ isDark, setActiveTab }) => {
   const navigate = useNavigate();
   
   // State variables for patient selection
@@ -77,16 +77,15 @@ const DiabetesView = ({ isDark }) => {
     navigate(`/patients/${patient.id}/diabetes-history`);
   };
 
+  // Handle going back to dashboard
+  const handleBackToDashboard = () => {
+    setActiveTab('overview');
+  };
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Diabetes Assessment</h2>
-        <Link 
-          to="/dashboard" 
-          className={`px-3 py-1 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'} transition-colors text-sm flex items-center`}
-        >
-          <Home className="w-4 h-4 mr-1" />Back to Dashboard
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -179,12 +178,12 @@ const DiabetesView = ({ isDark }) => {
                 ))}
               </div>
               
-              <Link
-                to="/patients"
-                className={`mt-4 block text-center py-2 px-4 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} transition-colors text-sm`}
+              <button
+                onClick={() => setActiveTab('patients')}
+                className={`mt-4 block text-center py-2 px-4 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} transition-colors text-sm w-full`}
               >
                 View All Patients
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -286,7 +285,31 @@ const DiabetesView = ({ isDark }) => {
             </div>
           )}
           
-
+          {/* Quick Actions */}
+          <div className="mt-6">
+            <h3 className="font-semibold mb-3">Quick Actions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <button
+                onClick={() => navigate('/patients/new')}
+                className={`py-3 px-4 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'} rounded-lg transition-colors flex items-center`}
+              >
+                <div className={`h-8 w-8 rounded-full ${isDark ? 'bg-slate-600' : 'bg-white'} flex items-center justify-center mr-3`}>
+                  <User className={`h-4 w-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                </div>
+                <span>Add New Patient</span>
+              </button>
+              
+              <button
+                onClick={handleBackToDashboard}
+                className={`py-3 px-4 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'} rounded-lg transition-colors flex items-center`}
+              >
+                <div className={`h-8 w-8 rounded-full ${isDark ? 'bg-slate-600' : 'bg-white'} flex items-center justify-center mr-3`}>
+                  <Home className={`h-4 w-4 ${isDark ? 'text-sky-400' : 'text-sky-600'}`} />
+                </div>
+                <span>Back to Dashboard</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>

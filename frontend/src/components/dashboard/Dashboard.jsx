@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import authService from '../../services/auth.service';
@@ -22,6 +22,8 @@ import PneumoniaView from './views/PneumoniaView';
 const Dashboard = () => {
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const sidebarRef = useRef(null);
+  const backdropRef = useRef(null);
 
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
@@ -60,6 +62,24 @@ const Dashboard = () => {
     pneumonia: 'Analyze chest X-rays to detect potential pneumonia cases.',
   };
 
+  // Handle clicks outside the sidebar to close it (mobile only)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobile && isSidebarOpen && 
+          sidebarRef.current && 
+          !sidebarRef.current.contains(event.target) && 
+          backdropRef.current && 
+          backdropRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobile, isSidebarOpen]);
+
   useEffect(() => {
     // fetch user info
     const user = authService.getCurrentUser();
@@ -85,11 +105,19 @@ const Dashboard = () => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      setIsSidebarOpen(!mobile);
+      // Only automatically open the sidebar on resize if transitioning from mobile to desktop
+      if (!mobile && isMobile) {
+        setIsSidebarOpen(true);
+      }
+      // Auto-close sidebar when transitioning to mobile
+      if (mobile && !isMobile && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
     };
+    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isMobile, isSidebarOpen]);
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
@@ -140,14 +168,26 @@ const Dashboard = () => {
 
   return (
     <div className={`min-h-screen flex ${isDark ? 'bg-slate-900 text-slate-200' : 'bg-slate-100 text-slate-800'} transition-colors`}>      
-      <Sidebar
-        isDark={isDark}
-        isSidebarOpen={isSidebarOpen}
-        isMobile={isMobile}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onLogout={onLogout}
-      />
+      <div ref={sidebarRef}>
+        <Sidebar
+          isDark={isDark}
+          isSidebarOpen={isSidebarOpen}
+          isMobile={isMobile}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          toggleSidebar={toggleSidebar}
+          onLogout={onLogout}
+        />
+      </div>
+
+      {/* Backdrop for mobile sidebar */}
+      {isSidebarOpen && isMobile && (
+        <div 
+          ref={backdropRef}
+          className="fixed inset-0 bg-black bg-opacity-50 z-20"
+          aria-hidden="true"
+        ></div>
+      )}
 
       <div className="flex-1 flex flex-col">
         <Header

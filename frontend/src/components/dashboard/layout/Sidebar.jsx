@@ -9,7 +9,8 @@ import {
   Layers,
   Bug,
   Stethoscope,
-  HeartPulse
+  HeartPulse,
+  X
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -21,6 +22,15 @@ const Sidebar = ({
   toggleSidebar, 
   onLogout 
 }) => {
+  // Function to handle sidebar navigation
+  const handleNavigation = (tab) => {
+    setActiveTab(tab);
+    // Close sidebar on mobile when a navigation item is clicked
+    if (isMobile) {
+      toggleSidebar();
+    }
+  };
+
   return (
     <>
       <aside 
@@ -30,22 +40,36 @@ const Sidebar = ({
                    w-64 md:translate-x-0 shadow-lg overflow-y-auto`}
       >
         <div className="p-4">
-          <Link 
-            to="/" 
-            className={`flex items-center justify-center md:justify-start space-x-3 mb-8 ${isDark ? 'hover:text-sky-400' : 'hover:text-sky-600'} transition-colors`}
-          >
-            <div className="flex-shrink-0">
-              <div className="h-8 w-8 rounded-md bg-sky-600 flex items-center justify-center">
-                <Layers className="h-5 w-5 text-white" />
+          <div className="flex items-center justify-between mb-8">
+            <Link 
+              to="/" 
+              className={`flex items-center space-x-3 ${isDark ? 'hover:text-sky-400' : 'hover:text-sky-600'} transition-colors`}
+            >
+              <div className="flex-shrink-0">
+                <div className="h-8 w-8 rounded-md bg-sky-600 flex items-center justify-center">
+                  <Layers className="h-5 w-5 text-white" />
+                </div>
               </div>
-            </div>
-            <span className="font-bold text-lg">HealthAI</span>
-          </Link>
+              <span className="font-bold text-lg">HealthAI</span>
+            </Link>
+            
+            {/* Close button for mobile view */}
+            {isMobile && (
+              <button 
+                onClick={toggleSidebar}
+                className={`p-2 rounded-md ${
+                  isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700'
+                }`}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
           
           {/* Sidebar Navigation */}
           <nav className="mt-6 space-y-1">
             <button 
-              onClick={() => setActiveTab('overview')}
+              onClick={() => handleNavigation('overview')}
               className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                 activeTab === 'overview' 
                   ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -57,7 +81,7 @@ const Sidebar = ({
             </button>
             
             <button 
-              onClick={() => setActiveTab('patients')}
+              onClick={() => handleNavigation('patients')}
               className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                 activeTab === 'patients' 
                   ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -73,7 +97,7 @@ const Sidebar = ({
               
               {/* Reordered diagnostics: Diabetes first */}
               <button
-                onClick={() => setActiveTab('diabetes')}
+                onClick={() => handleNavigation('diabetes')}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                   activeTab === 'diabetes' 
                     ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -87,7 +111,7 @@ const Sidebar = ({
               
               {/* Breast Cancer second */}
               <button
-                onClick={() => setActiveTab('breast-cancer')}
+                onClick={() => handleNavigation('breast-cancer')}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                   activeTab === 'breast-cancer' 
                     ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -101,7 +125,7 @@ const Sidebar = ({
               
               {/* Brain Tumor third */}
               <button
-                onClick={() => setActiveTab('brain-tumor')}
+                onClick={() => handleNavigation('brain-tumor')}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                   activeTab === 'brain-tumor' 
                     ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -115,7 +139,7 @@ const Sidebar = ({
               
               {/* Alzheimer's */}
               <button
-                onClick={() => setActiveTab('alzheimer')}
+                onClick={() => handleNavigation('alzheimer')}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                   activeTab === 'alzheimer' 
                     ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -129,7 +153,7 @@ const Sidebar = ({
               
               {/* COVID-19 */}
               <button
-                onClick={() => setActiveTab('covid')}
+                onClick={() => handleNavigation('covid')}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                   activeTab === 'covid' 
                     ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -143,7 +167,7 @@ const Sidebar = ({
               
               {/* Pneumonia */}
               <button
-                onClick={() => setActiveTab('pneumonia')}
+                onClick={() => handleNavigation('pneumonia')}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
                   activeTab === 'pneumonia' 
                     ? (isDark ? 'bg-slate-700 text-white' : 'bg-sky-100 text-sky-800') 
@@ -168,15 +192,6 @@ const Sidebar = ({
           </nav>
         </div>
       </aside>
-
-      {/* Backdrop for mobile sidebar */}
-      {isSidebarOpen && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20" 
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        ></div>
-      )}
     </>
   );
 };
