@@ -195,31 +195,7 @@ const DiabetesForm = () => {
     }
   };
   
-  // Handle saving prediction with doctor's assessment
-  const handleSaveAssessment = async (assessment) => {
-    if (!predictionResult || !predictionResult.id) {
-      setError('No prediction result to save');
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      await diagnosticsService.updateDiabetesPrediction(predictionResult.id, {
-        doctor_assessment: assessment,
-        doctor_notes: ''  // Could add a notes field to the UI
-      });
-      
-      // Navigate to patient record
-      navigate(`/patients/${patientId}`);
-    } catch (err) {
-      setError(err.message || 'Failed to save assessment. Please try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+
   // Handle going back to patient detail
   const handleBack = () => {
     navigate(`/patients/${patientId}`);
@@ -611,54 +587,6 @@ const DiabetesForm = () => {
               </div>
             )}
             
-            {/* Doctor's Assessment */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Doctor's Assessment</h3>
-              <p className={`mb-4 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                Review the AI prediction and provide your clinical assessment:
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => handleSaveAssessment(true)}
-                  disabled={loading}
-                  className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
-                    isDark 
-                      ? 'bg-rose-700 hover:bg-rose-600 text-white' 
-                      : 'bg-rose-600 hover:bg-rose-500 text-white'
-                  }`}
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-5 h-5 mr-2" />
-                      Confirm Diabetes Risk
-                    </>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => handleSaveAssessment(false)}
-                  disabled={loading}
-                  className={`flex-1 py-3 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
-                    isDark 
-                      ? 'bg-emerald-700 hover:bg-emerald-600 text-white' 
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                  }`}
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <>
-                      <X className="w-5 h-5 mr-2" />
-                      Rule Out Diabetes
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-            
             {/* Return to Assessment Button */}
             <button
               onClick={() => setPredictionResult(null)}
@@ -671,6 +599,7 @@ const DiabetesForm = () => {
               Edit Assessment Data
             </button>
           </div>
+          
         )}
       </div>
     </div>
