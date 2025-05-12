@@ -12,7 +12,7 @@ import Sidebar from './layout/Sidebar';
 // View Components
 import Overview from './views/Overview';
 import PatientOverview from './views/PatientOverview';
-import DiabetesAnalytics from './views/DiabetesAnalytics';
+import DiabetesView from './views/DiabetesView';
 import BrainTumorView from './views/BrainTumorView';
 import AlzheimerView from './views/AlzheimerView';
 import BreastCancerView from './views/BreastCancerView';
@@ -122,7 +122,7 @@ const Dashboard = () => {
       case 'patients':
         return <PatientOverview isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.patients} />;
       case 'diabetes':
-        return <DiabetesAnalytics isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.diabetes} />;
+        return <DiabetesView isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.diabetes} />;
       case 'brain-tumor':
         return <BrainTumorView isDark={isDark} pageDescription={descriptions['brain-tumor']} />;
       case 'alzheimer':

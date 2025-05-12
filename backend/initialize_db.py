@@ -20,6 +20,11 @@ def initialize_database():
     try:
         with app.app_context():
             logger.info("Creating database tables...")
+            # Make sure all models are imported
+            from models.user import User
+            from models.patient import Patient
+            from models.diagnostic import DiabetesPrediction, BrainTumorPrediction, AlzheimerPrediction, BreastCancerPrediction
+            
             db.create_all()
             logger.info("Database tables created successfully")
     except Exception as e:

@@ -43,13 +43,27 @@ const BreastCancerHistory = () => {
         setPatient(patientResponse.patient);
         
         // Fetch prediction history
-        const historyResponse = await diagnosticsService.getBreastCancerHistory(patientId);
-        setHistory(historyResponse.history || []);
+        try {
+          const historyResponse = await diagnosticsService.getBreastCancerHistory(patientId);
+          console.log("History response:", historyResponse);
+          
+          // Check if history exists and is an array
+          if (historyResponse && historyResponse.history && Array.isArray(historyResponse.history)) {
+            setHistory(historyResponse.history);
+          } else {
+            // Handle case where history exists but isn't an array
+            console.warn("History is not in expected format:", historyResponse);
+            setHistory([]);
+          }
+        } catch (historyError) {
+          console.error("Error fetching history:", historyError);
+          setError("Failed to load prediction history. " + historyError.message);
+          setHistory([]);
+        }
         
-        setError('');
-      } catch (err) {
-        setError(err.message || 'Failed to load patient data or prediction history.');
-        console.error(err);
+      } catch (patientError) {
+        console.error("Error fetching patient:", patientError);
+        setError("Failed to load patient data. " + patientError.message);
       } finally {
         setLoading(false);
         setPatientLoading(false);
@@ -60,6 +74,17 @@ const BreastCancerHistory = () => {
       fetchData();
     }
   }, [patientId]);
+  
+  // Add this helper function to handle possibly missing data
+  const getConfidencePercentage = (prediction) => {
+    if (!prediction) return "N/A";
+    
+    const probability = prediction.prediction_probability !== undefined 
+      ? prediction.prediction_probability 
+      : (prediction.confidence !== undefined ? prediction.confidence : 0);
+      
+    return (probability * 100).toFixed(1) + '%';
+  };
   
   // Format date for display
   const formatDate = (dateString) => {

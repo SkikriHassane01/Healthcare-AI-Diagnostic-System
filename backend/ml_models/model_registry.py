@@ -116,12 +116,13 @@ class ModelRegistry:
             
             # Log the prediction result structure for debugging
             logger.info(f"Prediction result structure: {type(result)}")
-            logger.info(f"Prediction result keys: {result.keys() if isinstance(result, dict) else 'Not a dict'}")
+            if isinstance(result, dict):
+                logger.info(f"Prediction result keys: {result.keys()}")
             
             # Return results
             return result
         except Exception as e:
-            logger.error(f"Error making prediction with model {model_name}: {str(e)}")
+            logger.error(f"Error making prediction with model {model_name}: {str(e)}", exc_info=True)
             return {"error": str(e)}
 
 # Create a singleton instance of the registry

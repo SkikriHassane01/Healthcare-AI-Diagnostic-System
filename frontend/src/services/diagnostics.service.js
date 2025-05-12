@@ -185,6 +185,12 @@ class DiagnosticsService {
   async updateBreastCancerPrediction(predictionId, data) {
     try {
       console.log(`Updating breast cancer prediction ${predictionId}:`, data);
+      
+      // Ensure we have a valid prediction ID
+      if (!predictionId) {
+        throw new Error('Invalid prediction ID');
+      }
+      
       const response = await api.put(`/api/diagnostics/breast-cancer/prediction/${predictionId}`, data);
       console.log('Update breast cancer prediction response:', response.data);
       return response.data;

@@ -285,7 +285,8 @@ def get_breast_cancer_history(current_user, patient_id):
         }), 200
         
     except Exception as e:
-        logger.error(f"Error retrieving breast cancer history: {str(e)}")
+        logger.error(f"Error retrieving breast cancer history: {str(e)}", exc_info=True)
+        db.session.rollback()
         return jsonify({"message": "An error occurred retrieving prediction history"}), 500
 
 @diagnostics_bp.route('/breast-cancer/prediction/<prediction_id>', methods=['GET'])
@@ -348,7 +349,7 @@ def update_breast_cancer_prediction(current_user, prediction_id):
             
         # Update doctor's assessment if provided
         if "doctor_assessment" in data:
-            prediction.doctor_assessment = bool(data["doctor_assessment"])
+            prediction.doctor_assessment = data["doctor_assessment"]
             
         # Update doctor's notes if provided
         if "doctor_notes" in data:
@@ -372,7 +373,6 @@ def update_breast_cancer_prediction(current_user, prediction_id):
     except Exception as e:
         logger.error(f"Error updating breast cancer prediction: {str(e)}")
         return jsonify({"message": "An error occurred updating prediction"}), 500
-
 @diagnostics_bp.route('/models', methods=['GET'])
 @token_required
 def get_available_models(current_user):

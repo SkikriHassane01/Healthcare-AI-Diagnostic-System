@@ -186,20 +186,23 @@ const BreastCancerForm = () => {
     try {
       setIsLoading(true);
       
-      // For demo purposes, we'll simulate a successful save since we might not have a proper ID
-      // This would normally call the API with the prediction ID
-      // await diagnosticsService.updateBreastCancerPrediction(result.id, {
-      //   doctor_assessment: true,
-      //   doctor_notes: 'Assessment confirmed by healthcare professional.'
-      // });
+      // Properly save the assessment with the correct ID
+      if (!result || !result.id) {
+        throw new Error('No valid prediction ID found');
+      }
       
       console.log("Saving assessment for patient:", patientId);
       console.log("Result:", result);
       
-      // Simulate a successful save
+      // Actually call the API to update the prediction
+      await diagnosticsService.updateBreastCancerPrediction(result.id, {
+        doctor_assessment: result.result ? 'malignant' : 'benign',
+        doctor_notes: 'Assessment confirmed by healthcare professional.'
+      });
+      
       setSuccessMessage('Assessment saved successfully to patient records');
       setTimeout(() => {
-        navigate(`/patients/${patientId}`);
+        navigate(`/patients/${patientId}/breast-cancer-history`);
       }, 1500);
     } catch (err) {
       setError(err.message || 'Failed to save assessment');

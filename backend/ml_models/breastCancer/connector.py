@@ -356,16 +356,24 @@ class BreastCancerModel:
             result (dict): Prediction result
             patient_id (str): Patient ID
         """
-        prediction = BreastCancerPrediction(
-            patient_id=patient_id,
-            input_data=input_data,
-            prediction_result="malignant" if result["prediction"] == "malignant" else "benign",
-            prediction_probability=result["probability"]
-        )
-        
-        db.session.add(prediction)
-        db.session.commit()
-        
-        logger.info(f"Stored breast cancer prediction for patient {patient_id}")
-        
-        return prediction.id
+        try:
+            # Make sure we have the correct prediction result format
+            is_malignant = result.get("prediction") == "malignant"  
+            
+            prediction = BreastCancerPrediction(
+                patient_id=patient_id,
+                input_data=input_data,
+                prediction_result="malignant" if is_malignant else "benign",
+                prediction_probability=float(result.get("probability", 0.5))
+            )
+            
+            db.session.add(prediction)
+            db.session.commit()
+            
+            logger.info(f"Stored breast cancer prediction for patient {patient_id}")
+            
+            return prediction.id
+        except Exception as e:
+            logger.error(f"Error storing prediction: {str(e)}")
+            db.session.rollback()
+            raise
