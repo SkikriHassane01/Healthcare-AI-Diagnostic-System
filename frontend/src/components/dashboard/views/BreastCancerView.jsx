@@ -1,12 +1,12 @@
+// frontend/src/components/dashboard/views/BreastCancerView.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import patientService from '../../../services/patient.service';
 import { 
   Home, 
   AlertCircle, 
   CheckCircle2, 
   Info, 
-  FileBarChart2, 
   ArrowRight, 
   Search,
   User,
@@ -15,10 +15,11 @@ import {
   Heart,
   FileText,
   FileDown,
-  Printer
+  Printer,
+  HeartPulse
 } from 'lucide-react';
 
-const BreastCancerView = ({ isDark }) => {
+const BreastCancerView = ({ isDark, setActiveTab }) => {
   const navigate = useNavigate();
   
   // State variables for patient selection
@@ -26,7 +27,7 @@ const BreastCancerView = ({ isDark }) => {
   const [loading, setLoading] = useState(true);
   const [patientError, setPatientError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTab, setSelectedTab] = useState('overview'); // 'overview', 'patients'
+  const [selectedTab, setSelectedTab] = useState('overview');
 
   // Fetch patients when component mounts
   useEffect(() => {
@@ -67,26 +68,23 @@ const BreastCancerView = ({ isDark }) => {
   
   // Navigate to patient assessment
   const handlePatientSelect = (patient) => {
-    // Direct navigation to the breast cancer assessment form for this patient
-    window.location.href = `/patients/${patient.id}/breast-cancer-assessment`;
+    navigate(`/patients/${patient.id}/breast-cancer-assessment`);
   };
   
   // Navigate to patient history
   const viewPatientHistory = (patient) => {
-    // Direct navigation to the breast cancer history for this patient
-    window.location.href = `/patients/${patient.id}/breast-cancer-history`;
+    navigate(`/patients/${patient.id}/breast-cancer-history`);
+  };
+
+  // Handle going back to dashboard
+  const handleBackToDashboard = () => {
+    setActiveTab('overview');
   };
 
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Breast Cancer Detection</h2>
-        <Link 
-          to="/dashboard" 
-          className={`px-3 py-1 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'} transition-colors text-sm flex items-center`}
-        >
-          <Home className="w-4 h-4 mr-1" />Back to Dashboard
-        </Link>
+        <h2 className="text-2xl font-bold">Breast Cancer Assessment</h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -116,7 +114,7 @@ const BreastCancerView = ({ isDark }) => {
           {selectedTab === 'overview' && (
             <div>
               <h3 className="font-semibold mb-4 flex items-center">
-                <FileBarChart2 className="mr-2 h-5 w-5 text-pink-500"/>
+                <HeartPulse className="mr-2 h-5 w-5 text-pink-500"/>
                 About This Tool
               </h3>
               <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mb-4`}>
@@ -124,7 +122,7 @@ const BreastCancerView = ({ isDark }) => {
               </p>
               
               <div className={`mb-6 p-4 rounded-lg ${isDark ? 'bg-slate-700' : 'bg-slate-50'}`}>
-                <h4 className="font-medium mb-2">About the biomarkers:</h4>
+                <h4 className="font-medium mb-2">Key Assessment Factors:</h4>
                 <ul className={`${isDark ? 'text-slate-300' : 'text-slate-600'} list-disc list-inside space-y-1`}>
                   <li><span className="font-medium">Radius</span>: Mean distance from center to points on the perimeter</li>
                   <li><span className="font-medium">Texture</span>: Standard deviation of gray-scale values</li>
@@ -179,73 +177,12 @@ const BreastCancerView = ({ isDark }) => {
                 ))}
               </div>
               
-              <Link
-                to="/patients"
-                className={`mt-4 block text-center py-2 px-4 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} transition-colors text-sm`}
+              <button
+                onClick={() => setActiveTab('patients')}
+                className={`mt-4 block text-center py-2 px-4 rounded-md ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} transition-colors text-sm w-full`}
               >
                 View All Patients
-              </Link>
-            </div>
-          )}
-          
-          {/* Statistics Tab Content */}
-          {selectedTab === 'stats' && (
-            <div>
-              <h3 className="font-semibold mb-4 flex items-center">
-                <FileBarChart2 className="mr-2 h-5 w-5 text-pink-500"/>
-                Model Statistics
-              </h3>
-              
-              <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700' : 'bg-slate-50'} mb-4`}>
-                <h4 className="font-medium mb-2">Performance Metrics</h4>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Accuracy</span>
-                      <span className="font-medium text-sm">96%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full">
-                      <div className="h-2 bg-pink-500 rounded-full" style={{ width: '96%' }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Sensitivity</span>
-                      <span className="font-medium text-sm">94%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full">
-                      <div className="h-2 bg-pink-500 rounded-full" style={{ width: '94%' }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Specificity</span>
-                      <span className="font-medium text-sm">97%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full">
-                      <div className="h-2 bg-pink-500 rounded-full" style={{ width: '97%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700' : 'bg-slate-50'}`}>
-                <h4 className="font-medium mb-2">Usage Statistics</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Total Assessments</span>
-                    <span className="font-medium">284</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Malignant Detected</span>
-                    <span className="font-medium">89</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Benign Detected</span>
-                    <span className="font-medium">195</span>
-                  </div>
-                </div>
-              </div>
+              </button>
             </div>
           )}
         </div>
@@ -351,48 +288,26 @@ const BreastCancerView = ({ isDark }) => {
           <div className="mt-6">
             <h3 className="font-semibold mb-3">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Link
-                to="/patients/new"
+              <button
+                onClick={() => navigate('/patients/new')}
                 className={`py-3 px-4 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'} rounded-lg transition-colors flex items-center`}
               >
                 <div className={`h-8 w-8 rounded-full ${isDark ? 'bg-slate-600' : 'bg-white'} flex items-center justify-center mr-3`}>
                   <User className={`h-4 w-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                 </div>
                 <span>Add New Patient</span>
-              </Link>
+              </button>
               
-              <Link
-                to="/dashboard"
+              <button
+                onClick={handleBackToDashboard}
                 className={`py-3 px-4 ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'} rounded-lg transition-colors flex items-center`}
               >
                 <div className={`h-8 w-8 rounded-full ${isDark ? 'bg-slate-600' : 'bg-white'} flex items-center justify-center mr-3`}>
                   <Home className={`h-4 w-4 ${isDark ? 'text-sky-400' : 'text-sky-600'}`} />
                 </div>
                 <span>Back to Dashboard</span>
-              </Link>
+              </button>
             </div>
-          </div>
-          
-          {/* Information about saving records and exporting */}
-          <div className="mt-6 p-4 border rounded-lg border-dashed border-pink-500/50">
-            <h3 className="font-semibold mb-2 text-pink-500">About Saving and Exporting</h3>
-            <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'} mb-3`}>
-              When you perform a breast cancer assessment, you'll be able to:
-            </p>
-            <ul className={`text-sm space-y-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              <li className="flex items-start">
-                <CheckCircle2 className={`h-4 w-4 mr-2 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'} flex-shrink-0`} />
-                <span>Save assessment results directly to the patient's electronic health record</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className={`h-4 w-4 mr-2 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'} flex-shrink-0`} />
-                <span>Export detailed results in PDF format for printing or sharing</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className={`h-4 w-4 mr-2 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'} flex-shrink-0`} />
-                <span>View historical assessments to track changes over time</span>
-              </li>
-            </ul>
           </div>
         </div>
       </div>

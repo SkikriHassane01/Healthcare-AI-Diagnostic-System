@@ -152,15 +152,15 @@ const Dashboard = () => {
       case 'diabetes':
         return <DiabetesView isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.diabetes} />;
       case 'brain-tumor':
-        return <BrainTumorView isDark={isDark} pageDescription={descriptions['brain-tumor']} />;
+        return <BrainTumorView isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions['brain-tumor']} />;
       case 'alzheimer':
-        return <AlzheimerView isDark={isDark} pageDescription={descriptions.alzheimer} />;
+        return <AlzheimerView isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.alzheimer} />;
       case 'breast-cancer':
-        return <BreastCancerView isDark={isDark} pageDescription={descriptions['breast-cancer']} />;
+        return <BreastCancerView isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions['breast-cancer']} />;
       case 'covid':
-        return <Covid19View isDark={isDark} pageDescription={descriptions.covid} />;
+        return <Covid19View isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.covid} />;
       case 'pneumonia':
-        return <PneumoniaView isDark={isDark} pageDescription={descriptions.pneumonia} />;
+        return <PneumoniaView isDark={isDark} setActiveTab={setActiveTab} pageDescription={descriptions.pneumonia} />;
       default:
         return <Overview isDark={isDark} currentUser={currentUser} {...commonProps} />;
     }
