@@ -177,6 +177,7 @@ class BreastCancerModel:
                     prediction_proba = np.array([0.85, 0.15])
             
             prediction = int(prediction_proba[1] >= 0.5)  # 1 if probability >= 0.5, else 0
+            prediction_result = "malignant" if prediction else "benign"
             
             # Calculate feature importance
             try:
@@ -187,7 +188,7 @@ class BreastCancerModel:
             
             # Create result dictionary with explicit type conversion for JSON serialization
             result = {
-                "prediction": bool(prediction),
+                "prediction": prediction_result,
                 "probability": float(prediction_proba[1]),
                 "confidence": float(max(prediction_proba)),
                 "features_importance": feature_importance,
@@ -358,9 +359,8 @@ class BreastCancerModel:
         prediction = BreastCancerPrediction(
             patient_id=patient_id,
             input_data=input_data,
-            prediction_result=result["prediction"],
-            prediction_probability=result["probability"],
-            features_importance=result["features_importance"]
+            prediction_result="malignant" if result["prediction"] == "malignant" else "benign",
+            prediction_probability=result["probability"]
         )
         
         db.session.add(prediction)

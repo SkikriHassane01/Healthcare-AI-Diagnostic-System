@@ -6,6 +6,13 @@
             "type": "tabular",
             "version": "1.0.0",
             "enabled": true
+        },
+        "breast-cancer": {
+            "connector": "ml_models.breastCancer.connector",
+            "class": "BreastCancerModel",
+            "type": "tabular",
+            "version": "1.0.0",
+            "enabled": true
         }
     }
 }
