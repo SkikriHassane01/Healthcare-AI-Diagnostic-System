@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const HeroSection = ({ isDark }) => {
+const HeroSection = ({ isDark, isLoggedIn, navigateToDashboard }) => {
   return (
     <div className={`relative ${isDark ? 'bg-slate-900' : 'bg-slate-50'} pt-24 transition-colors duration-300`}>
       <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center">
@@ -14,10 +14,11 @@ const HeroSection = ({ isDark }) => {
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <Link
-              to="/register"
+              to={isLoggedIn ? "/dashboard" : "/register"}
               className="flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-md text-white bg-sky-600 hover:bg-sky-500 transition-colors transform hover:scale-105 duration-200"
+              onClick={navigateToDashboard}
             >
-              Get Started Now
+              {isLoggedIn ? "Go to Dashboard" : "Get Started Now"}
             </Link>
             <a
               href="#demo"
@@ -33,12 +34,21 @@ const HeroSection = ({ isDark }) => {
           </div>
         </div>
         <div className="md:w-1/2 animate-fade-in animation-delay-300">
-                <img 
-                src="https://infinityai.kindigi.com/uploads/b1221e93-2c22-4a60-8ffe-ef608c4983dd/download/1.png"
-                alt="AI Diagnostics Platform" 
-                className="rounded-lg shadow-lg w-full"
-                />
-            </div>
+          {/* Image container with proper styling */}
+          <div className="relative rounded-lg overflow-hidden shadow-2xl">
+            <img 
+              src="src/assets/images/about.jpg"
+              alt="AI Diagnostics Platform" 
+              className="w-full h-auto object-cover"
+            />
+            {/* Optional overlay effects for better integration */}
+            {isDark && <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent"></div>}
+            
+            {/* Optional floating decorative elements */}
+            <div className="absolute -top-4 -right-4 h-16 w-16 bg-sky-500/20 rounded-full blur-xl animate-pulse-slow"></div>
+            <div className="absolute -bottom-4 -left-4 h-20 w-20 bg-sky-600/20 rounded-full blur-xl animate-pulse-slow animation-delay-2000"></div>
+          </div>
+        </div>
       </div>
       
       {/* Stats Section */}

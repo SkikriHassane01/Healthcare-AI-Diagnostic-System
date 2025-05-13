@@ -1,3 +1,4 @@
+// frontend/src/services/auth.service.js
 import api from './api';
 
 // Define storage keys
@@ -53,12 +54,34 @@ class AuthService {
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   }
+  
   /**
    * Logout the current user
    */
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+  }
+
+  /**
+   * Ensure authentication is persisted
+   * This helps maintain auth state during page refresh
+   * @returns {boolean} - Whether authentication was successfully persisted
+   */
+  persistAuth() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const user = localStorage.getItem(USER_KEY);
+    
+    if (token && user) {
+      // If we need to do any refresh or validation, we could do it here
+      // Make sure token is also set in the API headers
+      if (api.defaults && api.defaults.headers) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
+      console.log('Auth token persisted successfully');
+      return true;
+    }
+    return false;
   }
 
   /**

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const Demo = ({ isDark }) => {
@@ -62,7 +62,7 @@ const Demo = ({ isDark }) => {
         </div>
 
         <div className="flex flex-col md:flex-row items-center gap-12">
-          {/* Video Demo Section */}
+          {/* Video Demo Section - Fixed with consistent dimensions */}
           <div className="md:w-1/2 w-full">
             <div className={`rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-50'} p-1 shadow-2xl transform transition-all duration-300 hover:scale-[1.02]`}>
               <div className={`${isDark ? 'bg-slate-900' : 'bg-slate-50'} rounded-lg overflow-hidden relative`}>
@@ -75,7 +75,7 @@ const Demo = ({ isDark }) => {
                 </div>
                 
                 {/* Video component with loading indicator */}
-                <div className="relative aspect-video bg-slate-900">
+                <div className="relative aspect-video bg-slate-900 h-[300px]">
                   {isVideoLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-12 h-12 border-4 border-slate-400 border-t-sky-500 rounded-full animate-spin"></div>
@@ -123,7 +123,7 @@ const Demo = ({ isDark }) => {
             </div>
           </div>
 
-          {/* Demo Steps Section */}
+          {/* Demo Steps Section - Fixed with consistent image dimensions */}
           <div className="md:w-1/2 w-full mt-8 md:mt-0">
             <div className={`${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-lg border p-6`}>
               <div className="flex justify-between items-center mb-4">
@@ -135,11 +135,11 @@ const Demo = ({ isDark }) => {
                 </div>
               </div>
               
-              <div className="mb-6">
+              <div className="mb-6 h-[200px]">
                 <img 
                   src={demoSteps[currentStep].imageUrl || "src/assets/steps/step1.png"} 
                   alt={`Demo step ${currentStep + 1}`}
-                  className="w-full rounded-lg shadow-md"
+                  className="w-full h-full object-cover rounded-lg shadow-md"
                 />
               </div>
               

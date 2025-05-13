@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/pages/Navigation.jsx
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
-const Navigation = ({ isDark, setIsDark }) => {
+const Navigation = ({ isLoggedIn }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isDark, setIsDark } = useTheme();
 
   // Handle scroll for navbar appearance
-  useEffect(() => {
+  React.useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -60,20 +63,29 @@ const Navigation = ({ isDark, setIsDark }) => {
               )}
             </button>
             
-            <div className="space-x-4">
+            {isLoggedIn ? (
               <Link
-                to="/login"
-                className={`px-4 py-2 rounded-md text-sm font-medium ${isDark ? 'text-white hover:text-sky-400' : 'text-slate-700 hover:text-sky-600'} transition-colors`}
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/register"
+                to="/dashboard"
                 className="px-4 py-2 rounded-md text-sm font-medium text-white bg-sky-600 hover:bg-sky-500 transition-all shadow-md"
               >
-                Register
+                Dashboard
               </Link>
-            </div>
+            ) : (
+              <div className="space-x-4">
+                <Link
+                  to="/login"
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${isDark ? 'text-white hover:text-sky-400' : 'text-slate-700 hover:text-sky-600'} transition-colors`}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 rounded-md text-sm font-medium text-white bg-sky-600 hover:bg-sky-500 transition-all shadow-md"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
 
             {/* Mobile menu button */}
             <div className="md:hidden ml-4">
@@ -106,12 +118,21 @@ const Navigation = ({ isDark, setIsDark }) => {
             <div className="pt-4 pb-3 border-t border-slate-200 dark:border-slate-700">
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
-                  <Link
-                    to="/register"
-                    className="w-full px-4 py-2 text-center rounded-md text-sm font-medium text-white bg-sky-600 hover:bg-sky-500 transition-all"
-                  >
-                    Get Started
-                  </Link>
+                  {isLoggedIn ? (
+                    <Link
+                      to="/dashboard"
+                      className="w-full px-4 py-2 text-center rounded-md text-sm font-medium text-white bg-sky-600 hover:bg-sky-500 transition-all"
+                    >
+                      Dashboard
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/register"
+                      className="w-full px-4 py-2 text-center rounded-md text-sm font-medium text-white bg-sky-600 hover:bg-sky-500 transition-all"
+                    >
+                      Get Started
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

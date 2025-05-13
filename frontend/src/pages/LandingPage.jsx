@@ -1,4 +1,8 @@
+// frontend/src/pages/LandingPage.jsx
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import authService from '../services/auth.service';
+import { useTheme } from '../context/ThemeContext';
 import Navigation from './Navigation';
 import HeroSection from './HeroSection';
 import Features from './Features';
@@ -8,11 +12,10 @@ import Demo from './Demo';
 import Testimonials from './Testimonials';
 import Footer from './Footer';
 import { ChevronUp } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/auth.service';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  // Check if user is logged in and persist authentication
   const isLoggedIn = authService.isLoggedIn();
   
   // Use this function for navigation buttons
@@ -26,24 +29,27 @@ const LandingPage = () => {
       navigate('/register');
     }
   };
-  const [isDark, setIsDark] = useState(false);
+  
+  const { isDark } = useTheme();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Check if system prefers dark mode
   useEffect(() => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDark(true);
+    // Ensure auth is persisted on page load
+    if (isLoggedIn) {
+      authService.persistAuth();
     }
     
     // Listen for changes in system theme
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
-      setIsDark(e.matches);
+      // We don't set isDark here because that's now managed by ThemeContext
+      // This just lets us react to system theme changes if needed
     };
     
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  }, [isLoggedIn]);
 
   // Show/hide scroll to top button
   useEffect(() => {
@@ -69,8 +75,8 @@ const LandingPage = () => {
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'} transition-colors duration-300`}>
-      <Navigation isDark={isDark} setIsDark={setIsDark} />
-      <HeroSection isDark={isDark} />
+      <Navigation isDark={isDark} isLoggedIn={isLoggedIn} />
+      <HeroSection isDark={isDark} isLoggedIn={isLoggedIn} navigateToDashboard={navigateToDashboard} />
       <Features isDark={isDark} />
       <AIModels isDark={isDark} />
       <HowItWorks isDark={isDark} />
