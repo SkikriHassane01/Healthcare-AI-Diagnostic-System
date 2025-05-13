@@ -179,19 +179,11 @@ class BreastCancerModel:
             prediction = int(prediction_proba[1] >= 0.5)  # 1 if probability >= 0.5, else 0
             prediction_result = "malignant" if prediction else "benign"
             
-            # Calculate feature importance
-            try:
-                feature_importance = self._calculate_feature_importance(data, preprocessed_data)
-            except Exception as fi_error:
-                logger.error(f"Error calculating feature importance: {str(fi_error)}")
-                feature_importance = []
-            
             # Create result dictionary with explicit type conversion for JSON serialization
             result = {
                 "prediction": prediction_result,
                 "probability": float(prediction_proba[1]),
                 "confidence": float(max(prediction_proba)),
-                "features_importance": feature_importance,
                 "timestamp": datetime.utcnow().isoformat()
             }
             

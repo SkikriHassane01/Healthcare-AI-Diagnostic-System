@@ -13,6 +13,18 @@ import { useTheme } from '../../../context/ThemeContext';
 import patientService from '../../../services/patient.service';
 import diagnosticsService from '../../../services/diagnostics.service';
 
+const featureRanges = {
+  radius_mean: { min: 5, max: 30 },
+  texture_mean: { min: 5, max: 50 },
+  perimeter_mean: { min: 40, max: 200 },
+  area_mean: { min: 100, max: 2500 },
+  smoothness_mean: { min: 0.05, max: 0.2 },
+  compactness_mean: { min: 0.01, max: 0.5 },
+  concavity_mean: { min: 0, max: 0.5 },
+  concave_points_mean: { min: 0, max: 0.3 },
+  symmetry_mean: { min: 0.1, max: 0.4 },
+  fractal_dimension_mean: { min: 0.04, max: 0.1 }
+};
 const BreastCancerForm = () => {
   const { isDark } = useTheme();
   const { patientId } = useParams();
@@ -269,39 +281,43 @@ const BreastCancerForm = () => {
                   Load Sample Data
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {Object.keys(formData).map((field) => (
-                  <div key={field}>
-                    <label
-                      htmlFor={field}
-                      className={`block text-sm font-medium mb-1 ${
-                        formErrors[field] ? 'text-rose-500' : isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}
-                    >
-                      {formatFeatureName(field)} *
-                    </label>
-                    <input
-                      type="text"
-                      id={field}
-                      name={field}
-                      value={formData[field]}
-                      onChange={handleChange}
-                      className={`w-full px-3 py-2 rounded-md ${
-                        formErrors[field]
-                          ? 'border-rose-500'
-                          : isDark
-                          ? 'bg-slate-700 border-slate-600 text-white'
-                          : 'bg-white border-slate-300'
-                      } border focus:outline-none focus:ring-2 focus:ring-pink-500`}
-                      placeholder={`Enter ${formatFeatureName(field).toLowerCase()}`}
-                    />
-                    {formErrors[field] && (
-                      <p className="mt-1 text-sm text-rose-500">{formErrors[field]}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {Object.keys(formData).map((field) => (
+                <div key={field}>
+                  <label
+                    htmlFor={field}
+                    className={`block text-sm font-medium mb-1 ${
+                      formErrors[field] ? 'text-rose-500' : isDark ? 'text-slate-300' : 'text-slate-700'
+                    }`}
+                  >
+                    {formatFeatureName(field)} *
+                  </label>
+                  <input
+                    type="text"
+                    id={field}
+                    name={field}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 rounded-md ${
+                      formErrors[field]
+                        ? 'border-rose-500'
+                        : isDark
+                        ? 'bg-slate-700 border-slate-600 text-white'
+                        : 'bg-white border-slate-300'
+                    } border focus:outline-none focus:ring-2 focus:ring-pink-500`}
+                    placeholder={`Enter ${formatFeatureName(field).toLowerCase()}`}
+                  />
+                  {formErrors[field] && (
+                    <p className="mt-1 text-sm text-rose-500">{formErrors[field]}</p>
+                  )}
+                  {/* Add this part to display the valid range */}
+                  <p className={`mt-1 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Valid range: {featureRanges[field].min} to {featureRanges[field].max}
+                  </p>
+                </div>
+              ))}
+            </div>
               
               <div className="flex justify-center">
                 <button

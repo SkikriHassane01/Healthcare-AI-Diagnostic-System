@@ -7,7 +7,7 @@ import {
   UserPlus, 
   ClipboardList, 
   Stethoscope,
-  Bug,
+  Bug, 
   Info,
   Heart
 } from 'lucide-react';

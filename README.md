@@ -10,12 +10,10 @@
 
 ## 1. Project Overview
 
-This project aims to develop a healthcare AI diagnostic system that initially integrates two disease prediction models (Diabetes and Brain Tumor) to assist healthcare professionals in quickly and accurately diagnosing patients. The system is designed with extensibility in mind, allowing for easy integration of additional models in the future (Alzheimer's, Covid-19, Pneumonia, and Breast Cancer).
+This project aims to develop a healthcare AI diagnostic system that  integrates six disease prediction models (Diabetes, Brain Tumor, Alzheimer's, Covid-19, Pneumonia, and Breast Cancer) to assist healthcare professionals in quickly and accurately diagnosing patients.
 
 ### Core Objectives
 
-- Create a unified platform initially integrating 2 pre-developed disease prediction models (Diabetes and Brain Tumor)
-- Design the system architecture to be extensible, allowing easy addition of future models
 - Provide healthcare professionals with fast and accurate diagnostic assistance
 - Maintain a secure environment for patient data
 - Enable effective patient profile management and historical record-keeping
@@ -53,8 +51,6 @@ The system will follow a microservice architecture pattern, with the following c
 
     Redux would allow patient data to be accessed from any component without passing it through multiple layers, and would ensure that updates to that data follow a consistent, trackable pattern.
 - **UI Components**: Material-UI or Ant Design (for medical-appropriate UI elements)
-- **Visualization**: Chart.js for data visualization
-- **Image Processing**: TensorFlow.js for client-side image processing
 
 ### Backend
 
@@ -95,39 +91,35 @@ The system will follow a microservice architecture pattern, with the following c
 - Image upload interface
 - Image preprocessing and validation
 - Model prediction with confidence scores
-- Heatmap visualization of areas of interest
-- Results storage and comparison
+- Results storage
 
 ### 4. Tabular Data Diagnostics
 
 - Structured data entry forms
 - Data validation and normalization
 - Model prediction with confidence scores and contributing factors
-- Results visualization and interpretation
+- Results interpretation
 
 ### 5. Patient Health Records
 
 - Chronological view of diagnoses
 - Admission and diagnosis dates tracking
-- Results history and comparison
-- Medical notes and annotations
+- Results history
+- Medical notes
 - Image gallery of uploaded diagnostic images
 
 ---
 
 ## 5. Integration Strategy for Disease Models
 
-### Initial Models
+### Models
 
 - **Diabetes Model**: Tabular data-based prediction
+- **Breast Cancer**: Tabular
 - **Brain Tumor Model**: Image-based diagnosis
-
-### Future Expansion Models
-
-- Alzheimer's
-- Covid-19
-- Pneumonia
-- Breast Cancer
+- **Alzheimer's**: Image-based diagnosis
+- **Covid-19**: Image-based diagnosis
+- **Pneumonia**: Image-based diagnosis
 
 ### Approach: Modular Flask API Architecture
 
@@ -157,9 +149,8 @@ Models will be integrated through Flask API endpoints with a focus on extensibil
 2. Image is validated, normalized, and securely stored in S3
 3. Appropriate model microservice is called based on the diagnostic test selected
 4. Model processes the image and returns predictions with confidence scores
-5. Results are processed, visualized, and presented to the doctor
-6. Doctor can approve/modify the results
-7. Final results are saved to the patient's profile
+5. Results are processed, and presented to the doctor
+6. Final results are saved to the patient's profile
 
 ### Tabular Data Diagnostic Flow
 
@@ -167,9 +158,8 @@ Models will be integrated through Flask API endpoints with a focus on extensibil
 2. Data is validated and normalized
 3. Appropriate model microservice is called
 4. Model processes the data and returns predictions with confidence scores and factors
-5. Results are processed, visualized, and presented to the doctor
-6. Doctor can approve/modify the results
-7. Final results are saved to the patient's profile
+5. Results are processed, and presented to the doctor
+6. Final results are saved to the patient's profile
 
 ---
 
@@ -194,6 +184,22 @@ The UI will balance modern dashboard elements with traditional medical interface
 - **Patient History**: Timeline view of patient's diagnostic history
 
 ---
+
+## 8. Administrator Access
+
+The system provides special privileges for administrators who manage the platform.
+
+### Administrator Capabilities
+
+Administrators have access to a comprehensive analytics dashboard that provides:
+
+- **User Statistics**: Monitor total patient count and registered doctors
+- **Disease Analytics**: View percentage distribution of specific diseases across patients
+- **Temporal Data Visualization**: Access interactive line charts showing patient registration trends by day, week, and month
+- **Performance Metrics**: Track system usage patterns and diagnostic model accuracy
+- **Reporting Tools**: Generate and export detailed reports for administrative purposes
+
+The dashboard interface features responsive design with filterable data views to support data-driven decision making and resource allocation.
 
 ## 8. Conclusion
 

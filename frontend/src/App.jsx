@@ -20,6 +20,7 @@ import PatientForm from './components/patients/PatientForm';
 import DiabetesForm from './components/diagnostics/diabetes/DiabetesForm';
 import DiabetesHistory from './components/diagnostics/diabetes/DiabetesHistory';
 import AlzheimerForm from './components/diagnostics/alzheimer/AlzheimerForm';
+import AlzheimerHistory from './components/diagnostics/alzheimer/AlzheimerHistory';
 import BreastCancerForm from './components/diagnostics/breastCancer/BreastCancerForm';
 import BreastCancerHistory from './components/diagnostics/breastCancer/BreastCancerHistory';
 
@@ -64,6 +65,8 @@ function App() {
             <Route path="/patients/:id/edit" element={<PatientForm mode="edit" />} />
             
             {/* Diagnostic Routes */}
+
+            {/* Add Diabetes Routes */}
             <Route path="/patients/:patientId/diabetes-assessment" element={<DiabetesForm />} />
             <Route path="/patients/:patientId/diabetes-history" element={<DiabetesHistory />} />
             
@@ -71,8 +74,9 @@ function App() {
             <Route path="/patients/:patientId/breast-cancer-assessment" element={<BreastCancerForm />} /> 
             <Route path="/patients/:patientId/breast-cancer-history" element={<BreastCancerHistory />} />
             
-            <Route path="/diagnostics/brain-tumor" element={<BrainTumorPage />} />
-            <Route path="/diagnostics/alzheimer" element={<AlzheimerForm />} />
+            {/* Alzheimer Routes */}
+            <Route path="/patients/:patientId/alzheimer-assessment" element={<AlzheimerForm />} />
+            <Route path="/patients/:patientId/alzheimer-history" element={<AlzheimerHistory />} />
           </Route>
           
           {/* Admin-only routes */}

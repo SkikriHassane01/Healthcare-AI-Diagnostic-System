@@ -8,7 +8,10 @@ import {
   Brain, 
   Calendar, 
   ChevronRight,
-  Camera
+  ChevronLeft,
+  Camera,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 
 const AlzheimerHistory = () => {
@@ -168,7 +171,17 @@ const AlzheimerHistory = () => {
   
   // Handle viewing a prediction's details
   const handleViewPrediction = (prediction) => {
-    setSelectedPrediction(prediction);
+    // Convert from API format to detailed view format if necessary
+    const detailedPrediction = {
+      ...prediction,
+      created_at: prediction.date,
+      confidence: prediction.confidence,
+      prediction_class: prediction.classLabel,
+      doctor_assessment: prediction.doctor_assessment,
+      doctor_notes: prediction.doctor_notes
+    };
+    
+    setSelectedPrediction(detailedPrediction);
   };
   
   // Handle going back to patient detail
@@ -182,7 +195,7 @@ const AlzheimerHistory = () => {
       <div className={`p-6 min-h-screen ${isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'} transition-colors duration-300`}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <div className="inline-block w-12 h-12 border-4 border-slate-300 border-t-sky-500 rounded-full animate-spin mb-4"></div>
+            <div className="inline-block w-12 h-12 border-4 border-slate-300 border-t-purple-500 rounded-full animate-spin mb-4"></div>
             <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Loading patient data...</p>
           </div>
         </div>
@@ -230,68 +243,216 @@ const AlzheimerHistory = () => {
                     Age: {patient.age}
                   </div>
                   <div className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                    {/* Additional patient details can be added here */}
+                    Gender: {patient.gender === 'male' ? 'Male' : patient.gender === 'female' ? 'Female' : 'Other'}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         )}
-
-        {/* History List */}
-        <div className="mb-6">
-          {loading ? (
-            <div className="text-center py-4">Loading history...</div>
-          ) : error ? (
-            <div className="text-center py-4 text-red-500">{error}</div>
-          ) : history.length === 0 ? (
-            <div className="text-center py-4">No assessment history found.</div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {history.map((item, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center justify-between p-4 border rounded ${getBgColorClass(item.classLabel, isDark)}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-full ${getIconBgClass(item.classLabel)}`}>
-                      <Calendar className="w-6 h-6" />
+        
+        {/* Error Message */}
+        {error && (
+          <div className="bg-rose-100 dark:bg-rose-900/30 border border-rose-400 dark:border-rose-600 text-rose-700 dark:text-rose-400 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+        
+        {/* Content Area */}
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block w-12 h-12 border-4 border-slate-300 border-t-purple-500 rounded-full animate-spin mb-4"></div>
+            <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Loading prediction history...</p>
+          </div>
+        ) : selectedPrediction ? (
+          // Prediction Detail View
+          <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6`}>
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => setSelectedPrediction(null)}
+                className={`flex items-center text-sm font-medium ${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-500'} transition-colors`}
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to History
+              </button>
+              
+              <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                <Calendar className="w-4 h-4 inline-block mr-1" />
+                {formatDate(selectedPrediction.created_at)}
+              </div>
+            </div>
+            
+            {/* Prediction Result Card */}
+            <div className={`mb-6 p-4 rounded-lg ${getBgColorClass(selectedPrediction.prediction_class, isDark)} border`}>
+              <div className="flex items-center mb-4">
+                <div className={`h-12 w-12 rounded-full ${getIconBgClass(selectedPrediction.prediction_class)} flex items-center justify-center`}>
+                  <Brain className="h-6 w-6" />
+                </div>
+                <div className="ml-4">
+                  <h3 className={`text-lg font-semibold ${getColorClass(selectedPrediction.prediction_class, isDark)}`}>
+                    {getShortAssessmentLabel(selectedPrediction.prediction_class)}
+                  </h3>
+                  <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    {getAssessmentLabel(selectedPrediction.prediction_class)}
+                  </p>
+                  <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mt-1`}>
+                    Confidence: {formatPercentage(selectedPrediction.confidence)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className={`w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden`}>
+                <div 
+                  className={`h-full rounded-full ${
+                    selectedPrediction.prediction_class === 'CN' ? 'bg-emerald-500' :
+                    selectedPrediction.prediction_class === 'EMCI' ? 'bg-yellow-500' :
+                    selectedPrediction.prediction_class === 'LMCI' ? 'bg-amber-500' :
+                    'bg-rose-500'
+                  }`}
+                  style={{ width: `${selectedPrediction.confidence * 100}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-sm">
+                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>0% Confidence</span>
+                <span className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>100% Confidence</span>
+              </div>
+            </div>
+            
+            {/* Doctor's Notes */}
+            {selectedPrediction.doctor_notes && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Doctor's Notes</h3>
+                <div className={`${isDark ? 'bg-slate-700' : 'bg-slate-50'} rounded-lg p-4`}>
+                  <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    {selectedPrediction.doctor_notes}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* Doctor's Assessment (if different from prediction) */}
+            {selectedPrediction.doctor_assessment && selectedPrediction.doctor_assessment !== selectedPrediction.prediction_class && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Doctor's Assessment</h3>
+                <div className={`${getBgColorClass(selectedPrediction.doctor_assessment, isDark)} rounded-lg p-4 border`}>
+                  <div className="flex items-center">
+                    <div className={`h-10 w-10 rounded-full ${getIconBgClass(selectedPrediction.doctor_assessment)} flex items-center justify-center mr-4`}>
+                      <CheckCircle2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className={`font-semibold ${getColorClass(item.classLabel, isDark)}`}>
-                        {getShortAssessmentLabel(item.classLabel)}
+                      <p className={`font-medium ${getColorClass(selectedPrediction.doctor_assessment, isDark)}`}>
+                        {getShortAssessmentLabel(selectedPrediction.doctor_assessment)}
                       </p>
-                      <p className="text-sm">{formatDate(item.date)}</p>
+                      <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {getAssessmentLabel(selectedPrediction.doctor_assessment)}
+                      </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleViewPrediction(item)}
-                    className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                    <span className="ml-2">Details</span>
-                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <button
+                onClick={() => setSelectedPrediction(null)}
+                className={`flex-1 py-2 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                  isDark 
+                    ? 'bg-slate-700 hover:bg-slate-600 text-white' 
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                }`}
+              >
+                <ChevronLeft className="w-5 h-5 mr-2" />
+                Back to History
+              </button>
+              
+              <Link
+                to={`/patients/${patientId}/alzheimer-assessment`}
+                className={`flex-1 py-2 px-4 rounded-md transition-colors font-medium flex items-center justify-center ${
+                  isDark 
+                    ? 'bg-purple-700 hover:bg-purple-600 text-white' 
+                    : 'bg-purple-600 hover:bg-purple-500 text-white'
+                }`}
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                New Assessment
+              </Link>
+            </div>
+          </div>
+        ) : history.length === 0 ? (
+          // No history message
+          <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-6 mb-6 text-center`}>
+            <div className="py-8">
+              <Brain className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
+              <h3 className="text-lg font-semibold mb-2">No Assessment History</h3>
+              <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} mb-4`}>
+                This patient does not have any Alzheimer's assessments yet.
+              </p>
+              <Link
+                to={`/patients/${patientId}/alzheimer-assessment`}
+                className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-md shadow-md transition-colors"
+              >
+                <Brain className="w-5 h-5 mr-2" />
+                Create First Assessment
+              </Link>
+            </div>
+          </div>
+        ) : (
+          // History List View
+          <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border overflow-hidden mb-6`}>
+            <div className={`${isDark ? 'bg-slate-700' : 'bg-slate-50'} px-6 py-3 border-b ${isDark ? 'border-slate-600' : 'border-slate-200'}`}>
+              <h3 className="font-semibold">Assessment History</h3>
+            </div>
+            
+            <div className="divide-y divide-slate-200 dark:divide-slate-700">
+              {history.map((prediction) => (
+                <div 
+                  key={prediction.id}
+                  className={`px-6 py-4 ${isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-50'} transition-colors cursor-pointer`}
+                  onClick={() => handleViewPrediction(prediction)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`h-10 w-10 rounded-full ${getIconBgClass(prediction.classLabel)} flex items-center justify-center mr-4`}>
+                        <Brain className="h-5 w-5" />
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium">
+                          {getShortAssessmentLabel(prediction.classLabel)}
+                          
+                          {/* Show doctor's assessment if different */}
+                          {prediction.doctor_assessment && prediction.doctor_assessment !== prediction.classLabel && (
+                            <span className={`ml-2 text-sm font-normal ${getColorClass(prediction.doctor_assessment, isDark)}`}>
+                              (Doctor: {getShortAssessmentLabel(prediction.doctor_assessment)})
+                            </span>
+                          )}
+                        </h4>
+                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          <Calendar className="w-3.5 h-3.5 inline-block mr-1" />
+                          {formatDate(prediction.date)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <div className="mr-4">
+                        <div className="text-right">
+                          <span className={`font-medium ${getColorClass(prediction.classLabel, isDark)}`}>
+                            {formatPercentage(prediction.confidence)}
+                          </span>
+                          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            Confidence
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <ChevronRight className={`h-5 w-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Selected Prediction Details Modal */}
-        {selectedPrediction && (
-          <div className="mt-6 p-4 border rounded shadow-md">
-            <h3 className="text-xl font-bold mb-2">Prediction Details</h3>
-            <p><strong>Assessment:</strong> {getAssessmentLabel(selectedPrediction.classLabel)}</p>
-            <p><strong>Date:</strong> {formatDate(selectedPrediction.date)}</p>
-            {selectedPrediction.confidence !== undefined && (
-              <p><strong>Confidence:</strong> {formatPercentage(selectedPrediction.confidence)}</p>
-            )}
-            <button
-              onClick={() => setSelectedPrediction(null)}
-              className="mt-4 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded"
-            >
-              Close
-            </button>
           </div>
         )}
       </div>

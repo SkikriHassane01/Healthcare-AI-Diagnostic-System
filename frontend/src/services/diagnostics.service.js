@@ -108,7 +108,7 @@ class DiagnosticsService {
       throw new Error(error.response?.data?.message || 'Failed to update diabetes prediction');
     }
   }
-  /** ______________________Breast Cancer______________________*/
+  /**TODO: ______________________Breast Cancer______________________*/
   /**
    * Make a breast cancer prediction for a patient
    * @param {string} patientId - ID of the patient
@@ -199,6 +199,90 @@ class DiagnosticsService {
       throw new Error(error.response?.data?.message || 'Failed to update breast cancer prediction');
     }
   }
+
+  /** TODO: ______________________Alzheimer's______________________*/
+  /**
+ * Make an Alzheimer's prediction for a patient
+ * @param {string} patientId - ID of the patient
+ * @param {FormData} formData - Form data containing the image
+ * @returns {Promise} API response with prediction result
+ */
+async predictAlzheimer(patientId, formData) {
+  try {
+    console.log(`Making Alzheimer prediction for patient ${patientId}`);
+    const response = await api.post(`/api/diagnostics/alzheimer/predict/${patientId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    console.log("Alzheimer prediction response:", response.data);
+    return response.data;
+  } catch (error) {
+    // More detailed error logging
+    if (error.response) {
+      console.error('Error making Alzheimer prediction:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+      throw new Error(error.response.data?.message || 'Failed to make Alzheimer prediction');
+    } else if (error.request) {
+      console.error('No response received from server:', error.request);
+      throw new Error('No response received from server');
+    } else {
+      console.error('Error making Alzheimer prediction:', error.message);
+      throw new Error('Error sending request: ' + error.message);
+    }
+  }
+}
+
+/**
+ * Get Alzheimer's prediction history for a patient
+ * @param {string} patientId - ID of the patient
+ * @returns {Promise} API response with prediction history
+ */
+async getAlzheimerHistory(patientId) {
+  try {
+    const response = await api.get(`/api/diagnostics/alzheimer/history/${patientId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting Alzheimer history:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to get Alzheimer prediction history');
+  }
+}
+
+/**
+ * Get a specific Alzheimer's prediction
+ * @param {string} predictionId - ID of the prediction
+ * @returns {Promise} API response with prediction details
+ */
+async getAlzheimerPrediction(predictionId) {
+  try {
+    const response = await api.get(`/api/diagnostics/alzheimer/prediction/${predictionId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting Alzheimer prediction:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to get Alzheimer prediction');
+  }
+}
+
+/**
+ * Update an Alzheimer's prediction with doctor's assessment
+ * @param {string} predictionId - ID of the prediction
+ * @param {Object} data - Update data including doctor's assessment
+ * @returns {Promise} API response with updated prediction
+ */
+async updateAlzheimerPrediction(predictionId, data) {
+  try {
+    console.log(`Updating Alzheimer prediction ${predictionId}:`, data);
+    const response = await api.put(`/api/diagnostics/alzheimer/prediction/${predictionId}`, data);
+    console.log('Update Alzheimer prediction response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating Alzheimer prediction:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to update Alzheimer prediction');
+  }
+}
 }
 
 // Create singleton instance

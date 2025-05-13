@@ -13,6 +13,13 @@
             "type": "tabular",
             "version": "1.0.0",
             "enabled": true
+        },
+        "alzheimer": {
+            "connector": "ml_models.alzheimer.connector",
+            "class": "AlzheimerModel",
+            "type": "image",
+            "version": "1.0.0",
+            "enabled": true
         }
     }
 }
