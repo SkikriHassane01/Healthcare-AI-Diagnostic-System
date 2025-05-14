@@ -7,7 +7,8 @@ import {
   Activity,
   FileText,
   LogOut,
-  Database
+  Database,
+  X
 } from 'lucide-react';
 
 const AdminSidebar = ({ 

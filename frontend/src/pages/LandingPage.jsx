@@ -24,12 +24,20 @@ const LandingPage = () => {
     if (isLoggedIn) {
       // Ensure token is properly set before navigation
       authService.persistAuth();
-      navigate('/dashboard');
+      
+      // Check user role and navigate to appropriate dashboard
+      if (authService.isAdmin()) {
+        console.log('User is an admin, navigating to admin dashboard');
+        navigate('/admin');
+      } else {
+        console.log('User is a doctor, navigating to doctor dashboard');
+        navigate('/dashboard');
+      }
     } else {
+      // Not logged in, redirect to registration
       navigate('/register');
     }
   };
-  
   const { isDark } = useTheme();
   const [showScrollTop, setShowScrollTop] = useState(false);
 

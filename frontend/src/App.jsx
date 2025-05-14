@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import	React from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext'
 
 // Import authentication components
@@ -67,7 +67,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage  />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
@@ -103,9 +103,6 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminDashboard />} />
             <Route path="/admin/patients" element={<AdminDashboard />} />
-            <Route path="/admin/diagnostics" element={<AdminDashboard />} />
-            <Route path="/admin/reports" element={<AdminDashboard />} />
-            <Route path="/admin/settings" element={<AdminDashboard />} />
           </Route>
           
           {/* 404 route */}
