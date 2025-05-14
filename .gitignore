@@ -39,3 +39,5 @@ frontend/package-lock.json
 package-lock.json
 backend/ml_models/alzheimer/alzheimer_model.keras
 backend/ml_models/breastCancer/breastCancerModel.pkl
+backend/ml_models/diabetes/diabetes_model.pkl
+backend/uploads/
