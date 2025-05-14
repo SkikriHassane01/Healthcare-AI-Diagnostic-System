@@ -280,28 +280,45 @@ def delete_patient(current_user, patient_id):
             logger.warning(f"Delete/deactivate patient failed: patient not found - {patient_id}")
             return jsonify({'message': 'Patient not found'}), 404
         
+        # Log the request body for debugging
+        body_data = request.get_json(silent=True)
+        logger.info(f"Request body for delete operation: {body_data}")
+        
         # Check if permanent deletion was requested
-        data = request.get_json() or {}
-        permanent = data.get('permanent', False)
+        permanent = False
+        if body_data and isinstance(body_data, dict):
+            permanent = body_data.get('permanent', False)
+        
+        logger.info(f"Permanent deletion requested: {permanent}")
         
         if permanent:
             # Permanently delete the patient from the database
-            db.session.delete(patient)
-            db.session.commit()
-            logger.info(f"Patient permanently deleted: {patient.first_name} {patient.last_name}")
-            return jsonify({
-                'message': 'Patient permanently deleted'
-            }), 200
+            try:
+                db.session.delete(patient)
+                db.session.commit()
+                logger.info(f"Patient permanently deleted: {patient.first_name} {patient.last_name}")
+                return jsonify({
+                    'message': 'Patient permanently deleted'
+                }), 200
+            except Exception as inner_e:
+                db.session.rollback()
+                logger.error(f"Database error during permanent deletion: {str(inner_e)}")
+                return jsonify({'message': f'Database error: {str(inner_e)}'}), 500
         else:
             # Set to inactive (soft delete)
-            patient.is_active = False
-            db.session.commit()
-            logger.info(f"Patient deactivated: {patient.first_name} {patient.last_name}")
-            return jsonify({
-                'message': 'Patient deactivated successfully'
-            }), 200
+            try:
+                patient.is_active = False
+                db.session.commit()
+                logger.info(f"Patient deactivated: {patient.first_name} {patient.last_name}")
+                return jsonify({
+                    'message': 'Patient deactivated successfully'
+                }), 200
+            except Exception as inner_e:
+                db.session.rollback()
+                logger.error(f"Database error during deactivation: {str(inner_e)}")
+                return jsonify({'message': f'Database error: {str(inner_e)}'}), 500
         
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Delete/deactivate patient error: {str(e)}")
-        return jsonify({'message': 'Operation failed. Please try again.'}), 500
+        logger.error(f"Delete/deactivate patient error: {str(e)}", exc_info=True)
+        return jsonify({'message': f'Operation failed: {str(e)}'}), 500

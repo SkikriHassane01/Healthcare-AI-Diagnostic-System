@@ -12,8 +12,34 @@ import {
   Eye,
   ArrowLeft,
   UserX,
-  Users
+  Users,
+  Check,
+  AlertCircle
 } from 'lucide-react';
+
+// Simple toast notification component
+const Toast = ({ message, type, onClose }) => {
+  const bgColor = type === 'success' ? 'bg-green-500' : 'bg-rose-500';
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [onClose]);
+  
+  return (
+    <div className={`fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-md shadow-lg z-50 flex items-center`}>
+      {type === 'success' ? (
+        <Check className="h-5 w-5 mr-2" />
+      ) : (
+        <AlertCircle className="h-5 w-5 mr-2" />
+      )}
+      <span>{message}</span>
+    </div>
+  );
+};
 
 const PatientList = () => {
   const { isDark } = useTheme();
@@ -31,6 +57,15 @@ const PatientList = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [modalMode, setModalMode] = useState('delete'); // 'delete' or 'manage'
   const [includeInactive, setIncludeInactive] = useState(false);
+  
+  // Toast state
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Toast functions
+  const toast = {
+    success: (message) => setToastMessage({ message, type: 'success' }),
+    error: (message) => setToastMessage({ message, type: 'error' })
+  };
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -88,64 +123,90 @@ const PatientList = () => {
   // Handle permanent patient deletion
   const handlePermanentDelete = async (patientId) => {
     try {
-      await patientService.deletePatient(patientId, true); // true = permanent deletion
+      setError(''); // Clear any existing errors
+      
+      await patientService.deletePatient(patientId, true);
+      
       // Remove patient from the list without refetching
       setPatients(patients.filter(p => p.id !== patientId));
       setTotalPatients(prev => prev - 1);
+      
+      // Show success message
+      toast.success('Patient deleted permanently');
+      
       setDeleteConfirmation(null);
     } catch (err) {
-      setError(err.message || 'Failed to permanently delete patient');
+      console.error('Failed to delete patient:', err);
+      setError(err.message || 'Failed to permanently delete patient. Please try again.');
+      toast.error('Failed to delete patient. Please try again.');
     }
   };
 
   // Handle patient deactivation (soft delete)
   const handleDeactivatePatient = async (patientId) => {
     try {
-      // Use updatePatient with is_active: false 
-      const response = await patientService.updatePatient(patientId, { is_active: false });
+      setError(''); // Clear any existing errors
       
-      // Check that the response has the correct is_active value
-      if (response && response.patient && response.patient.is_active === false) {
+      // Use the updatePatientStatus method instead of deletePatient
+      try {
+        const response = await patientService.updatePatient(patientId, { is_active: false });
+        
+        if (response && response.patient) {
+          // Update patient status in the current list
+          setPatients(patients.map(p => 
+            p.id === patientId ? { ...p, is_active: false } : p
+          ));
+          
+          // Show success message
+          toast.success('Patient marked as inactive successfully');
+        }
+      } catch (updateErr) {
+        // If the direct update fails, try the legacy method
+        await patientService.deletePatient(patientId, false);
+        
         // Update patient status in the current list
         setPatients(patients.map(p => 
           p.id === patientId ? { ...p, is_active: false } : p
         ));
-        setDeleteConfirmation(null);
-      } else {
-        // If the response doesn't confirm the status change, force a refresh
-        console.warn("Patient deactivation didn't return expected status, refreshing data...");
-        // Trigger a re-fetch by toggling includeInactive if it's false
-        if (!includeInactive) {
-          setIncludeInactive(true);
-        }
+        
+        toast.success('Patient marked as inactive successfully');
       }
+      
+      setDeleteConfirmation(null);
     } catch (err) {
-      setError(err.message || 'Failed to deactivate patient');
+      console.error('Failed to deactivate patient:', err);
+      setError(err.message || 'Failed to deactivate patient. Please try again.');
+      toast.error('Failed to deactivate patient. Please try again.');
     }
   };
 
   // Handle patient reactivation
   const handleReactivatePatient = async (patientId) => {
     try {
+      setError(''); // Clear any existing errors
+      
+      // Use updatePatient method
       const response = await patientService.updatePatient(patientId, { is_active: true });
       
-      // Check that the response has the correct is_active value
-      if (response && response.patient && response.patient.is_active === true) {
+      if (response && response.patient) {
         // Update patient status in the current list
         setPatients(patients.map(p => 
           p.id === patientId ? { ...p, is_active: true } : p
         ));
+        
+        // Show success message
+        toast.success('Patient reactivated successfully');
       } else {
-        // If the response doesn't confirm the status change, force a refresh
-        console.warn("Patient reactivation didn't return expected status, refreshing data...");
-        // Force a re-fetch
+        // Fallback to fetching updated data
         const timeoutId = setTimeout(() => {
           // This will trigger the useEffect to re-fetch data
           setCurrentPage(currentPage);
         }, 300);
       }
     } catch (err) {
-      setError(err.message || 'Failed to reactivate patient');
+      console.error('Failed to reactivate patient:', err);
+      setError(err.message || 'Failed to reactivate patient. Please try again.');
+      toast.error('Failed to reactivate patient. Please try again.');
     }
   };
 
@@ -206,6 +267,15 @@ const PatientList = () => {
           </Link>
         </div>
       </div>
+        
+        {/* Toast notification */}
+        {toastMessage && (
+          <Toast 
+            message={toastMessage.message}
+            type={toastMessage.type}
+            onClose={() => setToastMessage(null)}
+          />
+        )}
         
         {/* Search and Filters */}
         <div className={`${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-4 mb-6`}>

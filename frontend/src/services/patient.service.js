@@ -87,27 +87,72 @@ class PatientService {
   }
 
   /**
-     * Delete a patient - either permanently or by deactivating
-     * @param {string} id - Patient ID
-     * @param {boolean} permanent - Whether to permanently delete (true) or just deactivate (false)
-     * @returns {Promise} - API response
-     */
+   * Delete a patient - either permanently or by deactivating
+   * @param {string} id - Patient ID
+   * @param {boolean} permanent - Whether to permanently delete (true) or just deactivate (false)
+   * @returns {Promise} - API response
+   */
   async deletePatient(id, permanent = false) {
     try {
       console.log(`${permanent ? 'Permanently deleting' : 'Deactivating'} patient with ID: ${id}`);
       
-      // Send permanent flag in request body
+      // Make sure we have a valid ID
+      if (!id) {
+        throw new Error('Invalid patient ID');
+      }
+      
+      // Send permanent flag in request body with explicit Content-Type header
       const response = await api.delete(`/api/patients/${id}`, {
-        data: { permanent }
+        data: { permanent },
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       console.log('Delete patient response:', response.data);
       return response.data;
     } catch (error) {
       console.error(`Error ${permanent ? 'deleting' : 'deactivating'} patient ${id}:`, error);
-      throw new Error(error.response?.data?.message || `Failed to ${permanent ? 'delete' : 'deactivate'} patient`);
+      
+      // More detailed error reporting
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+        throw new Error(error.response.data?.message || `Failed to ${permanent ? 'delete' : 'deactivate'} patient`);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        throw new Error('Network error - no response received from server');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Request error:', error.message);
+        throw new Error(error.message || `Failed to ${permanent ? 'delete' : 'deactivate'} patient`);
+      }
     }
   }
+    /**
+   * Update a patient's active status directly
+   * @param {string} id - Patient ID
+   * @param {boolean} isActive - New active status
+   * @returns {Promise} - API response
+   */
+    async updatePatientStatus(id, isActive) {
+      try {
+        console.log(`Updating patient ${id} active status to: ${isActive}`);
+        
+        const response = await api.put(`/api/patients/${id}`, {
+          is_active: isActive
+        });
+        
+        console.log('Update patient status response:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error(`Error updating patient status:`, error);
+        throw new Error(error.response?.data?.message || 'Failed to update patient status');
+      }
+    }
 }
 
 // Create singleton instance

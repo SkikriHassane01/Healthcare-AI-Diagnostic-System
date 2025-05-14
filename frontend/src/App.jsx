@@ -100,7 +100,6 @@ function App() {
           {/* Admin-only routes */}
           <Route element={<ProtectedRoute requireAdmin={true} />}>
             <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminDashboard />} />
             <Route path="/admin/patients" element={<AdminDashboard />} />
           </Route>

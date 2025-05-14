@@ -52,48 +52,6 @@ const PatientOverview = ({ isDark, setActiveTab }) => {
             </Link>
           </div>
           
-          <div className={`mt-6 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-4`}>
-            <h3 className="font-semibold mb-4">Patient Support</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link 
-                  to="/patients/import" 
-                  className={`flex items-center p-3 rounded-md ${
-                    isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
-                  } transition-colors`}
-                >
-                  <FileText className="h-5 w-5 mr-3 text-slate-400" />
-                  <span>Import Patients</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/patients/export" 
-                  className={`flex items-center p-3 rounded-md ${
-                    isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
-                  } transition-colors`}
-                >
-                  <svg className="h-5 w-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 10V16M12 16L9 13M12 16L15 13M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H14L19 8V19C19 20.1046 18.1046 21 17 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span>Export Records</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/patients/archive" 
-                  className={`flex items-center p-3 rounded-md ${
-                    isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
-                  } transition-colors`}
-                >
-                  <svg className="h-5 w-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 8H19M5 8C4.46957 8 3.96086 7.78929 3.58579 7.41422C3.21071 7.03914 3 6.53043 3 6C3 5.46957 3.21071 4.96086 3.58579 4.58579C3.96086 4.21071 4.46957 4 5 4H19C19.5304 4 20.0391 4.21071 20.4142 4.58579C20.7893 4.96086 21 5.46957 21 6C21 6.53043 20.7893 7.03914 20.4142 7.41422C20.0391 7.78929 19.5304 8 19 8M5 8V18C5 18.5304 5.21071 19.0391 5.58579 19.4142C5.96086 19.7893 6.46957 20 7 20H17C17.5304 20 18.0391 19.7893 18.4142 19.4142C18.7893 19.0391 19 18.5304 19 18V8M10 12H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span>Archive Records</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
         </div>
         
         <div className={`md:col-span-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} rounded-lg shadow-sm border p-4`}>

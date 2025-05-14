@@ -138,6 +138,52 @@ class AdminService {
   }
 
   /**
+   * Create a new user
+   * @param {Object} userData - User data to create
+   * @returns {Promise} - API response with created user data
+   */
+  async createUser(userData) {
+    try {
+      const response = await api.post('/api/admin/users', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating user:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to create user');
+    }
+  }
+
+  /**
+   * Update an existing user
+   * @param {string} userId - User ID to update
+   * @param {Object} userData - Updated user data
+   * @returns {Promise} - API response with updated user data
+   */
+  async updateUser(userId, userData) {
+    try {
+      const response = await api.put(`/api/admin/users/${userId}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to update user');
+    }
+  }
+
+  /**
+   * Delete a user
+   * @param {string} userId - User ID to delete
+   * @returns {Promise} - API response
+   */
+  async deleteUser(userId) {
+    try {
+      const response = await api.delete(`/api/admin/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting user:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Failed to delete user');
+    }
+  }
+
+  /**
    * Get patient analytics data
    * @param {string} timeRange - Time range for analytics (month, quarter, year, all)
    * @returns {Promise} - API response with patient analytics
