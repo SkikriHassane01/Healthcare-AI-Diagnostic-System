@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import	React from 'react';
 import { ThemeProvider } from './context/ThemeContext'
 
 // Import authentication components
@@ -7,7 +7,8 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './components/dashboard/Dashboard';
-
+import AdminDashboard from './components/admin/AdminDashboard';
+import authService from './services/auth.service';
 // Import pages
 import LandingPage from './pages/LandingPage';
 
@@ -42,6 +43,23 @@ const NotFound = () => (
     </a>
   </div>
 );
+
+const RootRedirect = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (authService.isLoggedIn()) {
+      if (authService.isAdmin()) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [navigate]);
+  
+  // Return landing page while redirecting
+  return <LandingPage />;
+};
 
 function App() {
   return (
@@ -81,11 +99,20 @@ function App() {
           
           {/* Admin-only routes */}
           <Route element={<ProtectedRoute requireAdmin={true} />}>
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminDashboard />} />
+            <Route path="/admin/patients" element={<AdminDashboard />} />
+            <Route path="/admin/diagnostics" element={<AdminDashboard />} />
+            <Route path="/admin/reports" element={<AdminDashboard />} />
+            <Route path="/admin/settings" element={<AdminDashboard />} />
           </Route>
           
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />
+
+          {/* Auto redirect based on role */}
+          <Route path="/" element={<RootRedirect />} />
         </Routes>
       </Router>
     </ThemeProvider>
