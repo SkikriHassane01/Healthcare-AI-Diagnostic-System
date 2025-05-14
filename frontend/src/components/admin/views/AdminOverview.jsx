@@ -3,16 +3,15 @@ import {
   Users, 
   UserPlus, 
   Activity, 
-  Brain,
   Calendar,
   BarChart2,
   TrendingUp,
-  FileText,
-  Settings,
   TrendingDown,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import UserRegistrationChart from './UserRegistrationChart';
+import adminService from '../../../services/admin.service';
 
 const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
   const [loading, setLoading] = useState(initialLoading);
@@ -29,6 +28,8 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
     diagnosticsType: true
   });
   const [error, setError] = useState(null);
+  const [timeRange, setTimeRange] = useState('month'); // Default to month view
+  const [displayMode, setDisplayMode] = useState('percentage'); // Default to percentage view
 
   // Fetch detailed analytics data when component mounts
   useEffect(() => {
@@ -40,109 +41,65 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
           diagnosticsType: true
         });
 
-        // Fetch user registration data
+        // Fetch user registration data from the actual database
         try {
-          // In a real implementation, fetch from API:
-          // const userStats = await adminService.getUserRegistrationTrend('year');
+          const userStats = await adminService.getUserRegistrationTrend(timeRange);
           
-          // For now, simulate API call with timeout
-          setTimeout(() => {
-            // This would be real data from your API in production
-            const userRegistrationData = [
-              { date: 'Jan', count: 34 },
-              { date: 'Feb', count: 42 },
-              { date: 'Mar', count: 51 },
-              { date: 'Apr', count: 48 },
-              { date: 'May', count: 62 },
-              { date: 'Jun', count: 58 },
-              { date: 'Jul', count: 74 },
-              { date: 'Aug', count: 80 },
-              { date: 'Sep', count: 92 },
-              { date: 'Oct', count: 86 },
-              { date: 'Nov', count: 97 },
-              { date: 'Dec', count: 104 },
-            ];
-            
+          if (userStats && userStats.data) {
             setChartData(prev => ({
               ...prev,
-              userRegistration: userRegistrationData
+              userRegistration: userStats.data
             }));
-            
-            setLoadingCharts(prev => ({
-              ...prev,
-              userRegistration: false
-            }));
-          }, 800);
+          } else {
+            throw new Error('Invalid registration data format');
+          }
+          
+          setLoadingCharts(prev => ({
+            ...prev,
+            userRegistration: false
+          }));
         } catch (err) {
           console.error("Error fetching user registration trend:", err);
           setLoadingCharts(prev => ({
             ...prev,
             userRegistration: false
           }));
+          setError("Failed to load user registration data");
         }
 
-        // Fetch diagnostics by type data
+        // Fetch diagnostics by type data from the actual database
         try {
-          // In a real implementation, fetch from API:
-          // const diagnosticsStats = await adminService.getDiagnosticsByType();
+          const diagnosticsStats = await adminService.getDiagnosticsByType();
           
-          // For now, use data from stats or fallback to mock data
-          setTimeout(() => {
-            // Extract data from the stats prop if available, otherwise use mock data
+          if (diagnosticsStats && diagnosticsStats.data) {
+            setChartData(prev => ({
+              ...prev,
+              diagnosticsType: diagnosticsStats.data
+            }));
+          } else {
+            throw new Error('Invalid diagnostics data format');
+          }
+          
+          setLoadingCharts(prev => ({
+            ...prev,
+            diagnosticsType: false
+          }));
+        } catch (err) {
+          console.error("Error fetching diagnostics by type:", err);
+          
+          // If real data fails, use the stats prop data as fallback
+          if (stats && stats.diagnosticsByType) {
             const diagnosticsTypeData = [];
             
-            // Try to use data from stats.diagnosticsByType if available
-            if (stats && stats.diagnosticsByType) {
-              // If backend provides diagnostics by type data in the expected format
-              if (stats.diagnosticsByType.diabetes) {
-                diagnosticsTypeData.push({ 
-                  type: 'Diabetes', 
-                  count: stats.diagnosticsByType.diabetes.total || 0 
+            // Extract data from stats.diagnosticsByType
+            Object.entries(stats.diagnosticsByType).forEach(([type, data]) => {
+              if (data && data.total) {
+                diagnosticsTypeData.push({
+                  type: type.charAt(0).toUpperCase() + type.slice(1), // Capitalize type name
+                  count: data.total
                 });
               }
-              
-              if (stats.diagnosticsByType.brainTumor) {
-                diagnosticsTypeData.push({ 
-                  type: 'Brain Tumor', 
-                  count: stats.diagnosticsByType.brainTumor.total || 0 
-                });
-              }
-              
-              if (stats.diagnosticsByType.alzheimer) {
-                diagnosticsTypeData.push({ 
-                  type: 'Alzheimer', 
-                  count: stats.diagnosticsByType.alzheimer.total || 0 
-                });
-              }
-              
-              if (stats.diagnosticsByType.breastCancer) {
-                diagnosticsTypeData.push({ 
-                  type: 'Breast Cancer', 
-                  count: stats.diagnosticsByType.breastCancer.total || 0 
-                });
-              }
-            }
-            
-            // If we couldn't find any data or the data was incomplete, add mock data
-            if (diagnosticsTypeData.length === 0) {
-              diagnosticsTypeData.push(
-                { type: 'Diabetes', count: 480 },
-                { type: 'Brain Tumor', count: 320 },
-                { type: 'Alzheimer', count: 210 },
-                { type: 'Breast Cancer', count: 180 },
-                { type: 'COVID-19', count: 150 },
-                { type: 'Pneumonia', count: 120 }
-              );
-            } else if (diagnosticsTypeData.length < 4) {
-              // Add some additional mock data to fill out the chart if real data is incomplete
-              if (!diagnosticsTypeData.find(item => item.type === 'COVID-19')) {
-                diagnosticsTypeData.push({ type: 'COVID-19', count: 150 });
-              }
-              
-              if (!diagnosticsTypeData.find(item => item.type === 'Pneumonia')) {
-                diagnosticsTypeData.push({ type: 'Pneumonia', count: 120 });
-              }
-            }
+            });
             
             // Sort by count in descending order
             diagnosticsTypeData.sort((a, b) => b.count - a.count);
@@ -151,39 +108,33 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
               ...prev,
               diagnosticsType: diagnosticsTypeData
             }));
-            
-            setLoadingCharts(prev => ({
-              ...prev,
-              diagnosticsType: false
-            }));
-          }, 1200);
-        } catch (err) {
-          console.error("Error fetching diagnostics by type:", err);
+          }
+          
           setLoadingCharts(prev => ({
             ...prev,
             diagnosticsType: false
           }));
         }
 
-        // Get growth percentages from backend or calculate them
+        // Get growth percentages from backend
         try {
-          // In a real implementation:
-          // const growthStats = await adminService.getGrowthStats();
+          const growthStats = await adminService.getGrowthStats();
           
-          // For now, use mock growth data
-          setTimeout(() => {
+          if (growthStats && growthStats.data) {
             setChartData(prev => ({
               ...prev,
-              userGrowth: { percentage: 12.5, direction: 'up' },
-              patientGrowth: { percentage: 8.3, direction: 'up' },
-              diagnosticsGrowth: { percentage: 15.2, direction: 'up' },
-              monthlyGrowth: { percentage: 5.7, direction: 'up' }
+              userGrowth: growthStats.data.userGrowth || { percentage: 0, direction: 'up' },
+              patientGrowth: growthStats.data.patientGrowth || { percentage: 0, direction: 'up' },
+              diagnosticsGrowth: growthStats.data.diagnosticsGrowth || { percentage: 0, direction: 'up' },
+              monthlyGrowth: growthStats.data.monthlyGrowth || { percentage: 0, direction: 'up' }
             }));
-            
-            setLoading(false);
-          }, 500);
+          }
+          
+          setLoading(false);
         } catch (err) {
           console.error("Error fetching growth statistics:", err);
+          
+          // Keep default growth values
           setLoading(false);
         }
       } catch (error) {
@@ -198,26 +149,56 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
     };
 
     fetchDetailedStats();
-  }, [stats]);
+  }, [stats, timeRange]);
 
   // Function to refresh dashboard data
-  const refreshData = () => {
-    // In a real implementation, this would re-fetch data from API
+  const refreshData = async () => {
     setLoading(true);
     setLoadingCharts({
       userRegistration: true,
       diagnosticsType: true
     });
     
-    // Simulate API refresh with timeout
-    setTimeout(() => {
-      // Fetch data again using the existing useEffect logic
+    try {
+      // Refresh admin stats
+      const refreshedStats = await adminService.getAdminStats();
+      
+      // Then re-fetch detailed stats (the useEffect will handle this)
+      if (refreshedStats) {
+        // The useEffect will trigger again with new stats
+        window.location.reload(); // Simple refresh for now
+      }
+    } catch (err) {
+      console.error("Error refreshing data:", err);
+      setError("Failed to refresh dashboard data");
       setLoading(false);
       setLoadingCharts({
         userRegistration: false,
         diagnosticsType: false
       });
-    }, 1500);
+    }
+  };
+
+  // Function to handle time range change for user registration chart
+  const handleTimeRangeChange = (range) => {
+    setTimeRange(range);
+  };
+
+  // Function to calculate percentages for diagnostics by type
+  const calculatePercentages = (data) => {
+    if (!data || data.length === 0) return [];
+    
+    const total = data.reduce((sum, item) => sum + item.count, 0);
+    
+    return data.map(item => ({
+      ...item,
+      percentage: total > 0 ? parseFloat(((item.count / total) * 100).toFixed(1)) : 0
+    }));
+  };
+
+  // Function to toggle display mode (count vs percentage)
+  const toggleDisplayMode = (mode) => {
+    setDisplayMode(mode);
   };
 
   return (
@@ -352,14 +333,35 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
 
       {/* Main Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* User Registration Chart - FIXED VERSION */}
+        {/* User Registration Chart - Real Data */}
         <div className={`p-6 rounded-lg shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'} transition-colors`}>
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold">User Registration Trend</h3>
             <div className="flex space-x-2">
-              <button className={`px-2 py-1 text-xs rounded ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>Week</button>
-              <button className={`px-2 py-1 text-xs rounded ${isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white'}`}>Month</button>
-              <button className={`px-2 py-1 text-xs rounded ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>Year</button>
+              <button 
+                onClick={() => handleTimeRangeChange('week')} 
+                className={`px-2 py-1 text-xs rounded ${
+                  timeRange === 'week' 
+                    ? (isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white') 
+                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700')
+                }`}
+              >Week</button>
+              <button 
+                onClick={() => handleTimeRangeChange('month')} 
+                className={`px-2 py-1 text-xs rounded ${
+                  timeRange === 'month' 
+                    ? (isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white') 
+                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700')
+                }`}
+              >Month</button>
+              <button 
+                onClick={() => handleTimeRangeChange('year')} 
+                className={`px-2 py-1 text-xs rounded ${
+                  timeRange === 'year' 
+                    ? (isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white') 
+                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700')
+                }`}
+              >Year</button>
             </div>
           </div>
           
@@ -377,17 +379,31 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
           </div>
         </div>
         
-        {/* Diagnostics by Type */}
+        {/* Diagnostics by Type - Real Data */}
         <div className={`p-6 rounded-lg shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'} transition-colors`}>
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold">Diagnostics by Type</h3>
             <div className="flex space-x-2">
-              <button className={`px-2 py-1 text-xs rounded ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>Count</button>
-              <button className={`px-2 py-1 text-xs rounded ${isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white'}`}>Percentage</button>
+              <button 
+                onClick={() => toggleDisplayMode('count')} 
+                className={`px-2 py-1 text-xs rounded ${
+                  displayMode === 'count' 
+                    ? (isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white') 
+                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700')
+                }`}
+              >Count</button>
+              <button 
+                onClick={() => toggleDisplayMode('percentage')} 
+                className={`px-2 py-1 text-xs rounded ${
+                  displayMode === 'percentage' 
+                    ? (isDark ? 'bg-purple-700 text-white' : 'bg-purple-600 text-white') 
+                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700')
+                }`}
+              >Percentage</button>
             </div>
           </div>
           
-          {/* Chart - Horizontal Bar Chart */}
+          {/* Diagnostics Chart - Horizontal Bar Chart */}
           {loadingCharts.diagnosticsType ? (
             <div className="animate-pulse space-y-6">
               {[1, 2, 3, 4, 5, 6].map((item) => (
@@ -405,25 +421,35 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {chartData.diagnosticsType.map((item, index) => {
+              {calculatePercentages(chartData.diagnosticsType).map((item, index) => {
                 const maxCount = Math.max(...chartData.diagnosticsType.map(item => item.count));
-                const width = maxCount > 0 ? `${(item.count / maxCount) * 100}%` : '0%';
+                const width = maxCount > 0 
+                  ? displayMode === 'percentage' 
+                    ? `${item.percentage}%` 
+                    : `${(item.count / maxCount) * 100}%`
+                  : '0%';
+                
                 const colors = [
                   'bg-emerald-500', 'bg-purple-500', 'bg-blue-500', 
                   'bg-pink-500', 'bg-red-500', 'bg-amber-500'
                 ];
+                
                 return (
                   <div key={index} className="space-y-1">
                     <div className="flex justify-between">
                       <span className={`text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{item.type}</span>
-                      <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{item.count.toLocaleString()}</span>
+                      <span className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {displayMode === 'percentage' 
+                          ? `${item.percentage}%` 
+                          : item.count.toLocaleString()}
+                      </span>
                     </div>
                     <div className={`h-2 w-full rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
                       <div 
                         className={`h-2 rounded-full ${colors[index % colors.length]}`}
                         style={{ width }}
                         role="graphics-symbol"
-                        aria-label={`${item.type}: ${item.count.toLocaleString()} diagnostics`}
+                        aria-label={`${item.type}: ${item.count.toLocaleString()} diagnostics (${item.percentage}%)`}
                       ></div>
                     </div>
                   </div>
@@ -438,39 +464,6 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
             </span>
           </div>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <button onClick={() => window.location.href = '/admin/users'} className={`p-4 rounded-lg flex items-center ${isDark ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-slate-50'} transition-colors shadow-md`}>
-          <div className="h-10 w-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-4">
-            <Users className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-medium">Manage Users</h4>
-            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>View, add, edit user accounts</p>
-          </div>
-        </button>
-        
-        <button onClick={() => window.location.href = '/admin/reports'} className={`p-4 rounded-lg flex items-center ${isDark ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-slate-50'} transition-colors shadow-md`}>
-          <div className="h-10 w-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4">
-            <FileText className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-medium">Generate Reports</h4>
-            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Export system data reports</p>
-          </div>
-        </button>
-        
-        <button onClick={() => window.location.href = '/admin/settings'} className={`p-4 rounded-lg flex items-center ${isDark ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-slate-50'} transition-colors shadow-md`}>
-          <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
-            <Settings className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-medium">System Settings</h4>
-            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Configure system parameters</p>
-          </div>
-        </button>
       </div>
     </div>
   );

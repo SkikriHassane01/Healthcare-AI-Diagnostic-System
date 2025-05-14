@@ -48,7 +48,7 @@ const UserRegistrationChart = ({ userRegistrationData, isDark, isLoading = false
           })}
         </div>
         
-        {/* X-axis (month labels) */}
+        {/* X-axis (date labels) */}
         <div className="absolute bottom-0 left-0 right-12 flex justify-between">
           {userRegistrationData.map((item, index) => (
             <div key={index} className="text-xs text-center">

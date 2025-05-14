@@ -16,6 +16,78 @@ class AdminService {
   }
 
   /**
+   * Get diagnostic analytics data by type
+   * @returns {Promise} - API response with diagnostics by type data
+   */
+  async getDiagnosticsByType() {
+    try {
+      const response = await api.get('/api/admin/analytics/diagnostics-by-type');
+      return {
+        data: Object.entries(response.data.diagnostics).map(([type, count]) => ({
+          type: type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1').trim(), // Format camelCase to Title Case
+          count: count
+        })).sort((a, b) => b.count - a.count) // Sort by count descending
+      };
+    } catch (error) {
+      console.error('Error getting diagnostics by type:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user registration trends
+   * @param {string} timeRange - 'week', 'month', or 'year'
+   * @returns {Promise} - API response with user registration data
+   */
+  async getUserRegistrationTrend(timeRange = 'month') {
+    try {
+      const response = await api.get(`/api/admin/analytics/user-registration?timeRange=${timeRange}`);
+      return {
+        data: response.data.registrations.map(item => ({
+          date: item.label,
+          count: item.count
+        }))
+      };
+    } catch (error) {
+      console.error('Error getting user registration trends:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get growth statistics for dashboard
+   * @returns {Promise} - API response with growth data
+   */
+  async getGrowthStats() {
+    try {
+      const response = await api.get('/api/admin/analytics/growth');
+      return {
+        data: {
+          userGrowth: {
+            percentage: response.data.userGrowth.percentage,
+            direction: response.data.userGrowth.direction
+          },
+          patientGrowth: {
+            percentage: response.data.patientGrowth.percentage,
+            direction: response.data.patientGrowth.direction
+          },
+          diagnosticsGrowth: {
+            percentage: response.data.diagnosticsGrowth.percentage,
+            direction: response.data.diagnosticsGrowth.direction
+          },
+          monthlyGrowth: {
+            percentage: response.data.monthlyGrowth.percentage,
+            direction: response.data.monthlyGrowth.direction
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Error getting growth statistics:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get users with pagination and filtering
    * @param {Object} params - Query parameters
    * @returns {Promise} - API response with user list and pagination
@@ -34,67 +106,6 @@ class AdminService {
     } catch (error) {
       console.error('Error getting users:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to get users');
-    }
-  }
-
-  /**
-   * Get a single user by ID
-   * @param {string} userId - ID of the user
-   * @returns {Promise} - API response with user data
-   */
-  async getUser(userId) {
-    try {
-      const response = await api.get(`/api/admin/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error getting user ${userId}:`, error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to get user');
-    }
-  }
-
-  /**
-   * Create a new user
-   * @param {Object} userData - User data
-   * @returns {Promise} - API response with created user data
-   */
-  async createUser(userData) {
-    try {
-      const response = await api.post('/api/admin/users', userData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating user:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to create user');
-    }
-  }
-
-  /**
-   * Update an existing user
-   * @param {string} userId - ID of the user
-   * @param {Object} userData - Updated user data
-   * @returns {Promise} - API response with updated user data
-   */
-  async updateUser(userId, userData) {
-    try {
-      const response = await api.put(`/api/admin/users/${userId}`, userData);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating user ${userId}:`, error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to update user');
-    }
-  }
-
-  /**
-   * Delete a user
-   * @param {string} userId - ID of the user
-   * @returns {Promise} - API response
-   */
-  async deleteUser(userId) {
-    try {
-      const response = await api.delete(`/api/admin/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error deleting user ${userId}:`, error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to delete user');
     }
   }
 
@@ -125,71 +136,6 @@ class AdminService {
     } catch (error) {
       console.error('Error getting diagnostics analytics:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to get diagnostics analytics');
-    }
-  }
-
-  /**
-   * Generate report
-   * @param {Object} reportConfig - Report configuration
-   * @returns {Promise} - API response with report data or download link
-   */
-  async generateReport(reportConfig) {
-    try {
-      const response = await api.post('/api/admin/reports/generate', reportConfig);
-      return response.data;
-    } catch (error) {
-      console.error('Error generating report:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to generate report');
-    }
-  }
-
-  /**
-   * Get system settings
-   * @returns {Promise} - API response with system settings
-   */
-  async getSystemSettings() {
-    try {
-      const response = await api.get('/api/admin/settings');
-      return response.data;
-    } catch (error) {
-      console.error('Error getting system settings:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to get system settings');
-    }
-  }
-
-  /**
-   * Update system settings
-   * @param {Object} settings - Updated system settings
-   * @returns {Promise} - API response
-   */
-  async updateSystemSettings(settings) {
-    try {
-      const response = await api.put('/api/admin/settings', settings);
-      return response.data;
-    } catch (error) {
-      console.error('Error updating system settings:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to update system settings');
-    }
-  }
-
-  /**
-   * Get system logs
-   * @param {Object} params - Query parameters (level, start_date, end_date, limit)
-   * @returns {Promise} - API response with logs
-   */
-  async getSystemLogs(params = {}) {
-    try {
-      const queryParams = new URLSearchParams();
-      if (params.level) queryParams.append('level', params.level);
-      if (params.start_date) queryParams.append('start_date', params.start_date);
-      if (params.end_date) queryParams.append('end_date', params.end_date);
-      if (params.limit) queryParams.append('limit', params.limit.toString());
-
-      const response = await api.get(`/api/admin/logs?${queryParams.toString()}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error getting system logs:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to get system logs');
     }
   }
 }
