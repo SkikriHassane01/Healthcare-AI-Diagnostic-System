@@ -45,6 +45,11 @@ class AuthService {
         console.log('Login successful, storing token');
         localStorage.setItem(TOKEN_KEY, response.data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+        
+        // Make sure the auth token is set in API headers immediately
+        if (api.defaults && api.defaults.headers) {
+          api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        }
       } else {
         console.error('No token received in login response');
       }

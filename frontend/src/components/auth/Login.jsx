@@ -32,8 +32,14 @@ const Login = () => {
       // Attempt to login
       await authService.login(username, password);
       
-      // Redirect to dashboard on success
-      navigate('/dashboard');
+      // Check if user is admin and redirect accordingly
+      if (authService.isAdmin()) {
+        // Redirect to admin dashboard if user is admin
+        navigate('/admin');
+      } else {
+        // Redirect to regular dashboard for non-admin users
+        navigate('/dashboard');
+      }
     } catch (error) {
       // Show error message
       setError(error.message || 'Login failed. Please check your credentials.');

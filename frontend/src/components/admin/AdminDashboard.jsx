@@ -11,9 +11,6 @@ import AdminFooter from './layout/AdminFooter';
 import AdminOverview from './views/AdminOverview';
 import UserManagement from './views/UserManagement';
 import PatientAnalytics from './views/PatientAnalytics';
-import DiagnosticsAnalytics from './views/DiagnosticsAnalytics';
-import SystemSettings from './views/SystemSettings';
-import ReportGenerator from './views/ReportGenerator';
 
 const AdminDashboard = () => {
   const { isDark } = useTheme();
@@ -25,7 +22,6 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     userCount: 0,
     patientCount: 0,
-    totalDiagnostics: 0,
     lastMonthDiagnostics: 0,
   });
 
@@ -33,10 +29,7 @@ const AdminDashboard = () => {
   const titles = {
     overview: 'Admin Dashboard',
     users: 'User Management',
-    patients: 'Patient Analytics',
-    diagnostics: 'Diagnostics Analytics',
-    settings: 'System Settings',
-    reports: 'Report Generator',
+    patients: 'Patient Analytics'
   };
 
   // Check if user is admin
@@ -106,12 +99,6 @@ const AdminDashboard = () => {
         return <UserManagement isDark={isDark} />;
       case 'patients':
         return <PatientAnalytics isDark={isDark} />;
-      case 'diagnostics':
-        return <DiagnosticsAnalytics isDark={isDark} />;
-      case 'settings':
-        return <SystemSettings isDark={isDark} />;
-      case 'reports':
-        return <ReportGenerator isDark={isDark} />;
       default:
         return <AdminOverview isDark={isDark} stats={stats} loading={loading} />;
     }

@@ -8,7 +8,7 @@ const PatientAnalytics = ({ isDark }) => {
     totalPatients: 0,
     newPatientsLastMonth: 0,
     averageAge: 0,
-    patientsByGender: { male: 0, female: 0, other: 0 },
+    patientsByGender: { male: 0, female: 0},
     patientRegistrationByMonth: [],
     patientsByAgeGroup: [],
     patientsWithConditions: []
@@ -41,7 +41,7 @@ const PatientAnalytics = ({ isDark }) => {
       totalPatients: 2742,
       newPatientsLastMonth: 168,
       averageAge: 47.5,
-      patientsByGender: { male: 1350, female: 1380, other: 12 },
+      patientsByGender: { male: 1350, female: 1380},
       patientRegistrationByMonth: [
         { month: 'Jan', count: 142 },
         { month: 'Feb', count: 156 },
@@ -239,23 +239,16 @@ const PatientAnalytics = ({ isDark }) => {
                     <div 
                       className="bg-blue-500" 
                       style={{ 
-                        width: `${(stats.patientsByGender.male / (stats.patientsByGender.male + stats.patientsByGender.female + stats.patientsByGender.other)) * 100}%` 
+                        width: `${(stats.patientsByGender.male / (stats.patientsByGender.male + stats.patientsByGender.female)) * 100}%` 
                       }}
                       title={`Male: ${stats.patientsByGender.male}`}
                     ></div>
                     <div 
                       className="bg-pink-500" 
                       style={{ 
-                        width: `${(stats.patientsByGender.female / (stats.patientsByGender.male + stats.patientsByGender.female + stats.patientsByGender.other)) * 100}%` 
+                        width: `${(stats.patientsByGender.female / (stats.patientsByGender.male + stats.patientsByGender.female)) * 100}%` 
                       }}
                       title={`Female: ${stats.patientsByGender.female}`}
-                    ></div>
-                    <div 
-                      className="bg-purple-500" 
-                      style={{ 
-                        width: `${(stats.patientsByGender.other / (stats.patientsByGender.male + stats.patientsByGender.female + stats.patientsByGender.other)) * 100}%` 
-                      }}
-                      title={`Other: ${stats.patientsByGender.other}`}
                     ></div>
                   </>
                 )}
@@ -268,10 +261,6 @@ const PatientAnalytics = ({ isDark }) => {
                 <div className="flex items-center">
                   <div className="h-3 w-3 bg-pink-500 rounded-full mr-1"></div>
                   <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Female</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="h-3 w-3 bg-purple-500 rounded-full mr-1"></div>
-                  <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Other</span>
                 </div>
               </div>
             </>

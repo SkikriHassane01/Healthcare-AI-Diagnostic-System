@@ -5,7 +5,6 @@ import {
   Users, 
   BarChart2,
   Activity,
-  Settings,
   FileText,
   LogOut,
   Database
@@ -100,43 +99,7 @@ const AdminSidebar = ({
             <BarChart2 className="h-5 w-5 mr-3" />
             <span>Patient Analytics</span>
           </button>
-          
-          <button 
-            onClick={() => handleNavigation('diagnostics')}
-            className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
-              activeView === 'diagnostics' 
-                ? (isDark ? 'bg-slate-700 text-white' : 'bg-purple-100 text-purple-800') 
-                : (isDark ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-purple-800')
-            } font-medium`}
-          >
-            <Activity className="h-5 w-5 mr-3" />
-            <span>Diagnostics Analytics</span>
-          </button>
-          
-          <button 
-            onClick={() => handleNavigation('reports')}
-            className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
-              activeView === 'reports' 
-                ? (isDark ? 'bg-slate-700 text-white' : 'bg-purple-100 text-purple-800') 
-                : (isDark ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-purple-800')
-            } font-medium`}
-          >
-            <FileText className="h-5 w-5 mr-3" />
-            <span>Report Generator</span>
-          </button>
-          
-          <button 
-            onClick={() => handleNavigation('settings')}
-            className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
-              activeView === 'settings' 
-                ? (isDark ? 'bg-slate-700 text-white' : 'bg-purple-100 text-purple-800') 
-                : (isDark ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-purple-800')
-            } font-medium`}
-          >
-            <Settings className="h-5 w-5 mr-3" />
-            <span>System Settings</span>
-          </button>
-          
+
           <div className="pt-6">
             <button 
               onClick={onLogout}

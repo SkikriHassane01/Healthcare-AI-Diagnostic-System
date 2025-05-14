@@ -32,11 +32,13 @@ def create_app(config_class=Config):
     from api.auth import auth_bp
     from api.patients import patients_bp
     from api.diagnostics import diagnostics_bp
+    from api.admin import admin_bp
     
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(patients_bp)
     app.register_blueprint(diagnostics_bp)
+    app.register_blueprint(admin_bp)
     
     @app.route('/', methods=['GET'])
     def home():
