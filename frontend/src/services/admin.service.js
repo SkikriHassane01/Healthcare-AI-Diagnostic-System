@@ -21,16 +21,34 @@ class AdminService {
    */
   async getDiagnosticsByType() {
     try {
-      const response = await api.get('/api/admin/analytics/diagnostics-by-type');
+      const response = await api.get('/api/admin/analytics/diagnostics');
+      
+      // Extract data from diagnosticsByType object in the response
+      // and format it for the chart component
+      const typesData = [];
+      
+      if (response.data && response.data.diagnosticsByType) {
+        Object.entries(response.data.diagnosticsByType).forEach(([type, data]) => {
+          if (data && typeof data.total === 'number') {
+            typesData.push({
+              type: type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1').trim(), // Format camelCase to Title Case
+              count: data.total
+            });
+          }
+        });
+      }
+      
+      // Sort by count in descending order
+      typesData.sort((a, b) => b.count - a.count);
+      
       return {
-        data: Object.entries(response.data.diagnostics).map(([type, count]) => ({
-          type: type.charAt(0).toUpperCase() + type.slice(1).replace(/([A-Z])/g, ' $1').trim(), // Format camelCase to Title Case
-          count: count
-        })).sort((a, b) => b.count - a.count) // Sort by count descending
+        data: typesData
       };
     } catch (error) {
       console.error('Error getting diagnostics by type:', error);
-      throw error;
+      
+      // Return empty data instead of throwing to handle errors gracefully
+      return { data: [] };
     }
   }
 
@@ -41,16 +59,24 @@ class AdminService {
    */
   async getUserRegistrationTrend(timeRange = 'month') {
     try {
-      const response = await api.get(`/api/admin/analytics/user-registration?timeRange=${timeRange}`);
-      return {
-        data: response.data.registrations.map(item => ({
+      const response = await api.get(`/api/admin/analytics/users?timeRange=${timeRange}`);
+      
+      // Format the data for the chart component
+      let data = [];
+      
+      if (response.data && response.data.registrations) {
+        data = response.data.registrations.map(item => ({
           date: item.label,
           count: item.count
-        }))
-      };
+        }));
+      }
+      
+      return { data };
     } catch (error) {
       console.error('Error getting user registration trends:', error);
-      throw error;
+      
+      // Return empty data instead of throwing to handle errors gracefully
+      return { data: [] };
     }
   }
 
@@ -61,29 +87,31 @@ class AdminService {
   async getGrowthStats() {
     try {
       const response = await api.get('/api/admin/analytics/growth');
+      
+      // Default values in case the API doesn't return the expected data
+      const defaultGrowth = { percentage: 0, direction: 'up' };
+      
       return {
         data: {
-          userGrowth: {
-            percentage: response.data.userGrowth.percentage,
-            direction: response.data.userGrowth.direction
-          },
-          patientGrowth: {
-            percentage: response.data.patientGrowth.percentage,
-            direction: response.data.patientGrowth.direction
-          },
-          diagnosticsGrowth: {
-            percentage: response.data.diagnosticsGrowth.percentage,
-            direction: response.data.diagnosticsGrowth.direction
-          },
-          monthlyGrowth: {
-            percentage: response.data.monthlyGrowth.percentage,
-            direction: response.data.monthlyGrowth.direction
-          }
+          userGrowth: response.data?.userGrowth || defaultGrowth,
+          patientGrowth: response.data?.patientGrowth || defaultGrowth,
+          diagnosticsGrowth: response.data?.diagnosticsGrowth || defaultGrowth,
+          monthlyGrowth: response.data?.monthlyGrowth || defaultGrowth
         }
       };
     } catch (error) {
       console.error('Error getting growth statistics:', error);
-      throw error;
+      
+      // Return default values instead of throwing to handle errors gracefully
+      const defaultGrowth = { percentage: 0, direction: 'up' };
+      return {
+        data: {
+          userGrowth: defaultGrowth,
+          patientGrowth: defaultGrowth,
+          diagnosticsGrowth: defaultGrowth,
+          monthlyGrowth: defaultGrowth
+        }
+      };
     }
   }
 

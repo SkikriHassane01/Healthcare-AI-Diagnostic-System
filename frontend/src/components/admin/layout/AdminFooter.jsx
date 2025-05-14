@@ -10,10 +10,10 @@ const AdminFooter = ({ isDark }) => {
         </p>
         <div className="mt-2 sm:mt-0">
           <Link
-            to="/dashboard"
+            to="/"
             className={`text-sm ${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-800'}`}
           >
-            Back to Main Dashboard
+            Back to Main Page
           </Link>
         </div>
       </div>

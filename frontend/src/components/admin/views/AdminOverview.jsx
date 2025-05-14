@@ -31,7 +31,7 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
   const [timeRange, setTimeRange] = useState('month'); // Default to month view
   const [displayMode, setDisplayMode] = useState('percentage'); // Default to percentage view
 
-  // Fetch detailed analytics data when component mounts
+  // Fetch detailed analytics data when component mounts or timeRange changes
   useEffect(() => {
     const fetchDetailedStats = async () => {
       try {
@@ -40,8 +40,9 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
           userRegistration: true,
           diagnosticsType: true
         });
+        setError(null);
 
-        // Fetch user registration data from the actual database
+        // Fetch user registration data based on timeRange
         try {
           const userStats = await adminService.getUserRegistrationTrend(timeRange);
           
@@ -50,8 +51,6 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
               ...prev,
               userRegistration: userStats.data
             }));
-          } else {
-            throw new Error('Invalid registration data format');
           }
           
           setLoadingCharts(prev => ({
@@ -67,7 +66,7 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
           setError("Failed to load user registration data");
         }
 
-        // Fetch diagnostics by type data from the actual database
+        // Fetch diagnostics by type data
         try {
           const diagnosticsStats = await adminService.getDiagnosticsByType();
           
@@ -76,8 +75,6 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
               ...prev,
               diagnosticsType: diagnosticsStats.data
             }));
-          } else {
-            throw new Error('Invalid diagnostics data format');
           }
           
           setLoadingCharts(prev => ({
@@ -86,57 +83,31 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
           }));
         } catch (err) {
           console.error("Error fetching diagnostics by type:", err);
-          
-          // If real data fails, use the stats prop data as fallback
-          if (stats && stats.diagnosticsByType) {
-            const diagnosticsTypeData = [];
-            
-            // Extract data from stats.diagnosticsByType
-            Object.entries(stats.diagnosticsByType).forEach(([type, data]) => {
-              if (data && data.total) {
-                diagnosticsTypeData.push({
-                  type: type.charAt(0).toUpperCase() + type.slice(1), // Capitalize type name
-                  count: data.total
-                });
-              }
-            });
-            
-            // Sort by count in descending order
-            diagnosticsTypeData.sort((a, b) => b.count - a.count);
-            
-            setChartData(prev => ({
-              ...prev,
-              diagnosticsType: diagnosticsTypeData
-            }));
-          }
-          
           setLoadingCharts(prev => ({
             ...prev,
             diagnosticsType: false
           }));
         }
 
-        // Get growth percentages from backend
+        // Get growth percentages
         try {
           const growthStats = await adminService.getGrowthStats();
           
           if (growthStats && growthStats.data) {
             setChartData(prev => ({
               ...prev,
-              userGrowth: growthStats.data.userGrowth || { percentage: 0, direction: 'up' },
-              patientGrowth: growthStats.data.patientGrowth || { percentage: 0, direction: 'up' },
-              diagnosticsGrowth: growthStats.data.diagnosticsGrowth || { percentage: 0, direction: 'up' },
-              monthlyGrowth: growthStats.data.monthlyGrowth || { percentage: 0, direction: 'up' }
+              userGrowth: growthStats.data.userGrowth,
+              patientGrowth: growthStats.data.patientGrowth,
+              diagnosticsGrowth: growthStats.data.diagnosticsGrowth,
+              monthlyGrowth: growthStats.data.monthlyGrowth
             }));
           }
-          
-          setLoading(false);
         } catch (err) {
           console.error("Error fetching growth statistics:", err);
-          
           // Keep default growth values
-          setLoading(false);
         }
+        
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching detailed analytics:", error);
         setError("Failed to load dashboard data. Please try again.");
@@ -149,7 +120,7 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
     };
 
     fetchDetailedStats();
-  }, [stats, timeRange]);
+  }, [timeRange]); // Re-fetch when timeRange changes
 
   // Function to refresh dashboard data
   const refreshData = async () => {
@@ -158,16 +129,17 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
       userRegistration: true,
       diagnosticsType: true
     });
+    setError(null);
     
     try {
       // Refresh admin stats
-      const refreshedStats = await adminService.getAdminStats();
+      await adminService.getAdminStats();
       
-      // Then re-fetch detailed stats (the useEffect will handle this)
-      if (refreshedStats) {
-        // The useEffect will trigger again with new stats
-        window.location.reload(); // Simple refresh for now
-      }
+      // Re-fetch detailed stats
+      const timeRangeCopy = timeRange;
+      setTimeRange(''); // Force re-render
+      setTimeout(() => setTimeRange(timeRangeCopy), 10);
+      
     } catch (err) {
       console.error("Error refreshing data:", err);
       setError("Failed to refresh dashboard data");
@@ -241,9 +213,9 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
               key={i} 
               className={`p-6 rounded-lg shadow-md ${isDark ? 'bg-slate-800 animate-pulse' : 'bg-white animate-pulse'}`}
             >
-              <div className="h-12 w-12 rounded-full bg-slate-700 mb-4"></div>
-              <div className="h-6 w-24 bg-slate-700 rounded mb-2"></div>
-              <div className="h-10 w-16 bg-slate-700 rounded"></div>
+              <div className={`h-12 w-12 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'} mb-4`}></div>
+              <div className={`h-6 w-24 ${isDark ? 'bg-slate-700' : 'bg-slate-200'} rounded mb-2`}></div>
+              <div className={`h-10 w-16 ${isDark ? 'bg-slate-700' : 'bg-slate-200'} rounded`}></div>
             </div>
           ))}
         </div>
@@ -333,7 +305,7 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
 
       {/* Main Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* User Registration Chart - Real Data */}
+        {/* User Registration Chart */}
         <div className={`p-6 rounded-lg shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'} transition-colors`}>
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold">User Registration Trend</h3>
@@ -379,7 +351,7 @@ const AdminOverview = ({ isDark, stats, loading: initialLoading }) => {
           </div>
         </div>
         
-        {/* Diagnostics by Type - Real Data */}
+        {/* Diagnostics by Type */}
         <div className={`p-6 rounded-lg shadow-md ${isDark ? 'bg-slate-800' : 'bg-white'} transition-colors`}>
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold">Diagnostics by Type</h3>

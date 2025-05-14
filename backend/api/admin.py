@@ -13,6 +13,9 @@ from models.user import User, UserRole
 from models.patient import Patient
 from models.diagnostic import DiabetesPrediction, BrainTumorPrediction, AlzheimerPrediction, BreastCancerPrediction
 
+from sqlalchemy import func
+from models.user import User
+
 logger = setup_logger("admin_api")
 
 # Create a blueprint for admin routes
@@ -532,3 +535,146 @@ def generate_report(current_user):
     except Exception as e:
         logger.error(f"Error generating report: {str(e)}")
         return jsonify({'message': 'Failed to generate report'}), 500
+    
+
+@admin_bp.route('/analytics/users', methods=['GET'])
+@token_required
+@admin_required
+def get_user_registration_trend(current_user):
+    """Get user registration trend data by time range"""
+    logger.info(f"User registration trend request from admin: {current_user.username}")
+    
+    # Get time range parameter
+    time_range = request.args.get('timeRange', 'month')
+    
+    try:
+        # Define date range based on time_range
+        end_date = datetime.utcnow()
+        
+        if time_range == 'week':
+            start_date = end_date - timedelta(days=7)
+            date_format = '%a'  # Day of week (e.g., Mon, Tue)
+        elif time_range == 'month':
+            start_date = end_date - timedelta(days=30)
+            date_format = '%b %d'  # Month day (e.g., Jan 15)
+        elif time_range == 'year':
+            start_date = end_date - timedelta(days=365)
+            date_format = '%b'  # Month (e.g., Jan, Feb)
+        else:
+            # Default to month
+            start_date = end_date - timedelta(days=30)
+            date_format = '%b %d'
+        
+        # Query users created within the date range
+        users_by_date = []
+        
+        if time_range == 'week':
+            # For week view, get data by day
+            users_query = db.session.query(
+                func.date(User.created_at).label('date'),
+                func.count(User.id).label('count')
+            ).filter(
+                User.created_at >= start_date,
+                User.created_at <= end_date
+            ).group_by(
+                func.date(User.created_at)
+            ).order_by(
+                func.date(User.created_at)
+            ).all()
+            
+            # Create a dictionary of dates for the past week
+            date_dict = {}
+            for i in range(7):
+                date = (end_date - timedelta(days=6-i)).date()
+                date_dict[date] = 0
+            
+            # Fill in user counts
+            for date, count in users_query:
+                date_dict[date] = count
+            
+            # Format the data for the frontend
+            for date, count in date_dict.items():
+                users_by_date.append({
+                    'label': date.strftime(date_format),
+                    'count': count
+                })
+                
+        elif time_range == 'month':
+            # For month view, get data by day
+            users_query = db.session.query(
+                func.date(User.created_at).label('date'),
+                func.count(User.id).label('count')
+            ).filter(
+                User.created_at >= start_date,
+                User.created_at <= end_date
+            ).group_by(
+                func.date(User.created_at)
+            ).order_by(
+                func.date(User.created_at)
+            ).all()
+            
+            # Create a dictionary of dates for the past 30 days
+            date_dict = {}
+            for i in range(30):
+                date = (end_date - timedelta(days=29-i)).date()
+                date_dict[date] = 0
+            
+            # Fill in user counts
+            for date, count in users_query:
+                date_dict[date] = count
+            
+            # Format the data for the frontend
+            for date, count in date_dict.items():
+                users_by_date.append({
+                    'label': date.strftime(date_format),
+                    'count': count
+                })
+                
+        else:  # year view
+            # For year view, get data by month
+            users_query = db.session.query(
+                func.strftime('%Y-%m', User.created_at).label('month'),
+                func.count(User.id).label('count')
+            ).filter(
+                User.created_at >= start_date,
+                User.created_at <= end_date
+            ).group_by(
+                func.strftime('%Y-%m', User.created_at)
+            ).order_by(
+                func.strftime('%Y-%m', User.created_at)
+            ).all()
+            
+            # Create a dictionary of months for the past year
+            month_dict = {}
+            for i in range(12):
+                month_date = end_date - timedelta(days=30 * (11-i))
+                month_key = month_date.strftime('%Y-%m')
+                month_dict[month_key] = 0
+            
+            # Fill in user counts
+            for month, count in users_query:
+                month_dict[month] = count
+            
+            # Format the data for the frontend
+            for month_key in sorted(month_dict.keys()):
+                year, month = month_key.split('-')
+                date = datetime(int(year), int(month), 1)
+                users_by_date.append({
+                    'label': date.strftime(date_format),
+                    'count': month_dict[month_key]
+                })
+        
+        # If no data was found in the date range but we have users, 
+        # include them all in the earliest date to show something
+        if len(users_by_date) > 0 and sum(item['count'] for item in users_by_date) == 0:
+            total_users = User.query.count()
+            if total_users > 0:
+                users_by_date[0]['count'] = total_users
+        
+        return jsonify({
+            'registrations': users_by_date
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting user registration trend: {str(e)}")
+        return jsonify({'message': 'Failed to retrieve user registration trend', 'error': str(e)}), 500
