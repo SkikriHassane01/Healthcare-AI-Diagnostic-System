@@ -10,7 +10,6 @@ import AdminSidebar from './layout/AdminSidebar';
 import AdminFooter from './layout/AdminFooter';
 import AdminOverview from './views/AdminOverview';
 import UserManagement from './views/UserManagement';
-import PatientAnalytics from './views/PatientAnalytics';
 
 const AdminDashboard = () => {
   const { isDark } = useTheme();
@@ -97,8 +96,6 @@ const AdminDashboard = () => {
     switch (activeView) {
       case 'users':
         return <UserManagement isDark={isDark} />;
-      case 'patients':
-        return <PatientAnalytics isDark={isDark} />;
       default:
         return <AdminOverview isDark={isDark} stats={stats} loading={loading} />;
     }

@@ -89,17 +89,6 @@ const AdminSidebar = ({
             <span>User Management</span>
           </button>
           
-          <button 
-            onClick={() => handleNavigation('patients')}
-            className={`flex items-center w-full text-left p-3 rounded-lg transition-colors ${
-              activeView === 'patients' 
-                ? (isDark ? 'bg-slate-700 text-white' : 'bg-purple-100 text-purple-800') 
-                : (isDark ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-purple-800')
-            } font-medium`}
-          >
-            <BarChart2 className="h-5 w-5 mr-3" />
-            <span>Patient Analytics</span>
-          </button>
 
           <div className="pt-6">
             <button 
