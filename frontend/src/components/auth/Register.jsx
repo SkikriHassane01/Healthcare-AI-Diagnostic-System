@@ -81,8 +81,12 @@ const Register = () => {
       // Attempt to register
       await authService.register(userData);
       
-      // Redirect to dashboard on success
-      navigate('/dashboard');
+      // Check if registered user is admin and redirect accordingly
+      if (userData.role === 'admin' || authService.isAdmin()) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       // Show error message
       setError(error.message || 'Registration failed. Please try again.');

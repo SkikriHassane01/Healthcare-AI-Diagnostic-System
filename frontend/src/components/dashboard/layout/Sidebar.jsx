@@ -189,6 +189,7 @@ const Sidebar = ({
                 <span>Logout</span>
               </button>
             </div>
+            
           </nav>
         </div>
       </aside>
