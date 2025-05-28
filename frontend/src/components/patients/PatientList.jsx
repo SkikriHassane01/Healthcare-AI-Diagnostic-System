@@ -21,6 +21,7 @@ import {
 const Toast = ({ message, type, onClose }) => {
   const bgColor = type === 'success' ? 'bg-green-500' : 'bg-rose-500';
   
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -120,24 +121,28 @@ const PatientList = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  // Handle permanent patient deletion
+  // Handle permanent patient deletion - THIS FUNCTION WAS MISSING/INCOMPLETE
   const handlePermanentDelete = async (patientId) => {
     try {
       setError(''); // Clear any existing errors
       
+      // Call the API with permanent=true flag
       await patientService.deletePatient(patientId, true);
       
-      // Remove patient from the list without refetching
+      // Update the UI by removing the deleted patient
       setPatients(patients.filter(p => p.id !== patientId));
+      
+      // Update total count
       setTotalPatients(prev => prev - 1);
       
-      // Show success message
-      toast.success('Patient deleted permanently');
-      
+      // Close the confirmation modal
       setDeleteConfirmation(null);
+      
+      // Show success message
+      toast.success('Patient permanently deleted');
     } catch (err) {
       console.error('Failed to delete patient:', err);
-      setError(err.message || 'Failed to permanently delete patient. Please try again.');
+      setError(err.message || 'Failed to delete patient. Please try again.');
       toast.error('Failed to delete patient. Please try again.');
     }
   };
@@ -147,21 +152,19 @@ const PatientList = () => {
     try {
       setError(''); // Clear any existing errors
       
-      // Use the updatePatientStatus method instead of deletePatient
-      try {
-        const response = await patientService.updatePatient(patientId, { is_active: false });
+      // Use the updatePatient method to mark as inactive
+      const response = await patientService.updatePatient(patientId, { is_active: false });
+      
+      if (response && response.patient) {
+        // Update patient status in the current list
+        setPatients(patients.map(p => 
+          p.id === patientId ? { ...p, is_active: false } : p
+        ));
         
-        if (response && response.patient) {
-          // Update patient status in the current list
-          setPatients(patients.map(p => 
-            p.id === patientId ? { ...p, is_active: false } : p
-          ));
-          
-          // Show success message
-          toast.success('Patient marked as inactive successfully');
-        }
-      } catch (updateErr) {
-        // If the direct update fails, try the legacy method
+        // Show success message
+        toast.success('Patient marked as inactive successfully');
+      } else {
+        // Try fallback method if the first approach doesn't work
         await patientService.deletePatient(patientId, false);
         
         // Update patient status in the current list
@@ -172,6 +175,7 @@ const PatientList = () => {
         toast.success('Patient marked as inactive successfully');
       }
       
+      // Close the confirmation modal
       setDeleteConfirmation(null);
     } catch (err) {
       console.error('Failed to deactivate patient:', err);
@@ -225,13 +229,6 @@ const PatientList = () => {
           >
             <UserX className="w-4 h-4 mr-2" />
             Mark as Inactive
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white transition-colors flex items-center justify-center"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete Permanently
           </button>
           <button
             onClick={onCancel}

@@ -234,6 +234,11 @@ def update_patient(current_user, patient_id):
                     logger.warning(f"Update patient failed: invalid weight - {data['weight']}")
                     return jsonify({'message': 'Weight must be a valid number'}), 400
         
+        # Update is_active field if provided
+        if 'is_active' in data:
+            patient.is_active = bool(data['is_active'])
+            logger.info(f"Updated is_active to {patient.is_active} for patient: {patient.id}")
+        
         # Update other optional fields
         optional_fields = ['email', 'phone', 'address', 'medical_history', 'allergies']
         for field in optional_fields:
@@ -261,7 +266,6 @@ def update_patient(current_user, patient_id):
         db.session.rollback()
         logger.error(f"Update patient error: {str(e)}")
         return jsonify({'message': 'Patient update failed. Please try again.'}), 500
-
 @patients_bp.route('/<patient_id>', methods=['DELETE'])
 @token_required
 def delete_patient(current_user, patient_id):

@@ -8,6 +8,13 @@
 
 </div>
 
+## Demo
+
+<video width="640" height="360" controls>
+  <source src="./frontend/src/assets/video/PFA.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## 1. Project Overview
 
 This project aims to develop a healthcare AI diagnostic system that  integrates six disease prediction models (Diabetes, Brain Tumor, Alzheimer's, Covid-19, Pneumonia, and Breast Cancer) to assist healthcare professionals in quickly and accurately diagnosing patients.
